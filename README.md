@@ -20,7 +20,7 @@ Sciągnięcia lepszego wyniku niż znajduje się w checklistie dodaje te rozwią
 
 * Pobierz repozytorium
 ```bash
-git clone https://github.com/twoj_user/oi-fetcher.git
+git clone https://github.com/Matian37/oi-fetcher.git
 cd oi-fetcher
 ```
 
