@@ -51,3 +51,5 @@ playwright install firefox
 ```bash
 python main.py
 ```
+
+* Pamiętaj, aby po zakończeniu działania programu wszystkie zmiany w checkliście zacommitować
