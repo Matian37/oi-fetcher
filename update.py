@@ -10,6 +10,7 @@ from filtering import Task
 _COOLDOWN = timedelta(seconds=0.5)
 _last_read_time = datetime.now()
 
+
 def retrieve_subm_code(subm_id: int, page: Page):
     global _last_read_time
     while datetime.now() - _last_read_time < _COOLDOWN:
@@ -68,7 +69,9 @@ def sync_repo(page: Page, tasks: list[Task]):
         if best_score >= task.score:
             continue
 
-        print(f"📸 Updating task {task.shortname.upper()} in {task_dir_path} to {task.score}")
+        print(
+            f"📸 Updating task {task.shortname.upper()} in {task_dir_path} to {task.score}"
+        )
         print()
 
         file_path = gen_file_path(task_dir_path, task)

@@ -1,17 +1,7 @@
-import os
-
 from playwright.sync_api import Browser, Page, sync_playwright
-from PIL import Image
 
 from filtering import retrieve_scored_tasks
 from update import sync_repo
-
-
-def print_page(page: Page):
-    os.remove("test.png")
-    page.screenshot(path="test.png")
-    img = Image.open("test.png")
-    img.show()
 
 
 def login(page: Page):
