@@ -33,13 +33,13 @@ def gen_file_path(dir_path: Path, task: Task) -> Path:
 
 
 def sync_repo(page: Page, tasks: list[Task]):
-    solves_path = input("Please enter repo folder:\n")
+    solves_path = input("Podaj folder oi zawierajacy checkliste i rozwiazania:\n")
 
     if not os.path.isdir(solves_path):
-        raise Exception("Path should lead to folder not file")
+        raise Exception("Sciezka wskazuje na plik")
 
     if not os.path.exists(solves_path):
-        raise Exception("Path not found...")
+        raise Exception("Nie znaleziono takowej sciezki...")
 
     repo_path = Path(solves_path, "rozwiazania")
     repo_path.mkdir(exist_ok=True)
@@ -70,7 +70,7 @@ def sync_repo(page: Page, tasks: list[Task]):
             continue
 
         print(
-            f"📸 Updating task {task.shortname.upper()} in {task_dir_path} to {task.score}"
+            f"📸 Dodawanie zgloszenia o wyniku {task.score} do zadania {task.shortname.upper()}"
         )
         print()
 

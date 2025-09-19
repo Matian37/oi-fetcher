@@ -7,8 +7,8 @@ from update import sync_repo
 def login(page: Page):
     page.goto("https://szkopul.edu.pl/login/")
 
-    login = input("Please enter login:\n")
-    password = input("Please enter password:\n")
+    login = input("Podaj nazwe uzytkownika na szkopule:\n")
+    password = input("Podaj haslo:\n")
 
     usrbox = page.locator("input[id='id_auth-username']")
     usrbox.fill(login)
@@ -28,10 +28,10 @@ def run(browser: Browser):
 
     sync_repo(page, tasks)
 
-    print("✅ Fetcher job done. Stopping fetcher...")
+    print("✅ Fetcher zakonczyl pobieranie. Zatrzymywanie fetchera...")
 
 
-print("🚀 Starting fetcher...")
+print("🚀 Uruchamianie fetchera...")
 
 with sync_playwright() as playwright:
     browser = playwright.firefox.launch()
