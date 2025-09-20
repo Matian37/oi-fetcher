@@ -3,19 +3,30 @@ from playwright.sync_api import Browser, Page, sync_playwright
 from filtering import retrieve_scored_tasks
 from update import sync_repo
 
+import getpass
+
 
 def login(page: Page):
-    page.goto("https://szkopul.edu.pl/login/")
+    LOGIN_PAGE = "https://szkopul.edu.pl/login/"
+
+    page.goto(LOGIN_PAGE)
 
     login = input("Podaj nazwe uzytkownika na szkopule:\n")
-    password = input("Podaj haslo:\n")
 
-    usrbox = page.locator("input[id='id_auth-username']")
-    usrbox.fill(login)
+    while True:
+        password = getpass.getpass("Podaj haslo (wpisywanie niewidoczne):\n")
 
-    passbox = page.locator("input[id='id_auth-password']")
-    passbox.fill(password)
-    passbox.press("Enter")
+        usrbox = page.locator("input[id='id_auth-username']")
+        usrbox.fill(login)
+
+        passbox = page.locator("input[id='id_auth-password']")
+        passbox.fill(password)
+        passbox.press("Enter")
+
+        if page.url == LOGIN_PAGE:
+            print("⛔ Logowanie nie powiodlo sie...")
+        else:
+            break
 
 
 def run(browser: Browser):
