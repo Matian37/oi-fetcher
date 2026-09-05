@@ -1,50 +1,26 @@
-from playwright.sync_api import Browser, Page, sync_playwright
-
-from oi_fetcher.filtering import retrieve_scored_tasks
-from oi_fetcher.update import sync_repo
-
 import getpass
 
+from oi_fetcher.filtering import retrieve_scored_tasks
+from oi_fetcher.runner import WebsiteRunner
+from oi_fetcher.update import sync_repo
 
-def login(page: Page):
-    LOGIN_PAGE = "https://szkopul.edu.pl/login/"
 
-    page.goto(LOGIN_PAGE)
-
-    login = input("Podaj nazwe uzytkownika na szkopule:\n")
-
+def run_login_prompt(wr: WebsiteRunner):
     while True:
+        login = input("Podaj nazwe uzytkownika na szkopule:\n")
         password = getpass.getpass("Podaj haslo (wpisywanie niewidoczne):\n")
 
-        usrbox = page.locator("input[id='id_auth-username']")
-        usrbox.fill(login)
-
-        passbox = page.locator("input[id='id_auth-password']")
-        passbox.fill(password)
-        passbox.press("Enter")
-
-        if page.url == LOGIN_PAGE:
-            print("⛔ Logowanie nie powiodlo sie...")
-        else:
+        if wr.login(login, password):
             break
-
-
-def run(browser: Browser):
-    page = browser.new_page()
-
-    login(page)
-
-    page.goto("https://szkopul.edu.pl/task_archive/oi/")
-    tasks = retrieve_scored_tasks(page.content())
-
-    sync_repo(page, tasks)
-
-    print("✅ Fetcher zakonczyl pobieranie. Zatrzymywanie fetchera...")
+        else:
+            print("⛔ Logowanie nie powiodlo sie...")
 
 
 print("🚀 Uruchamianie fetchera...")
 
-with sync_playwright() as playwright:
-    browser = playwright.firefox.launch()
-    run(browser)
-    browser.close()
+with WebsiteRunner() as wr:
+    run_login_prompt(wr)
+    tasks = retrieve_scored_tasks(wr)
+    sync_repo(wr, tasks)
+
+print("✅ Fetcher zakonczyl pobieranie. Zatrzymywanie fetchera...")

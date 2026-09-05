@@ -1,29 +1,10 @@
-from datetime import datetime, timedelta
 import os
-from pathlib import Path
 import re
-
-from playwright.sync_api import Page
+from pathlib import Path
+from time import sleep
 
 from oi_fetcher.filtering import Task
-
-_COOLDOWN = timedelta(seconds=0.5)
-_last_read_time = datetime.now()
-
-
-def retrieve_subm_code(subm_id: int, page: Page):
-    global _last_read_time
-    while datetime.now() - _last_read_time < _COOLDOWN:
-        pass
-    _last_read_time = datetime.now()
-
-    page.goto(f"https://szkopul.edu.pl/s/{subm_id}/source/")
-
-    page.locator("button[id='cpy_btn']").click()
-    clipboard_text = page.evaluate("() => navigator.clipboard.readText()")
-
-    assert isinstance(clipboard_text, str)
-    return clipboard_text
+from oi_fetcher.runner import WebsiteRunner
 
 
 def gen_file_path(dir_path: Path, task: Task) -> Path:
@@ -32,7 +13,7 @@ def gen_file_path(dir_path: Path, task: Task) -> Path:
     return Path(dir_path, task.shortname, filename)
 
 
-def sync_repo(page: Page, tasks: list[Task]):
+def sync_repo(wr: WebsiteRunner, tasks: list[Task]):
     solves_path = input("Podaj folder oi zawierajacy checkliste i rozwiazania:\n")
 
     if not os.path.isdir(solves_path):
@@ -78,4 +59,5 @@ def sync_repo(page: Page, tasks: list[Task]):
 
         file_path.parent.mkdir(parents=True, exist_ok=True)
         with file_path.open("w", encoding="utf-8") as f:
-            f.write(retrieve_subm_code(task.subm_id, page))
+            f.write(wr.read_submission(task.subm_id))
+            sleep(0.5)

@@ -3,6 +3,8 @@ import re
 import pydantic
 import roman
 
+from oi_fetcher.runner import WebsiteRunner
+
 
 class Task(pydantic.BaseModel):
     subm_id: int
@@ -20,7 +22,9 @@ def _fix_loc(loc: list[str]) -> list[str]:
     return checklist_loc
 
 
-def retrieve_scored_tasks(html: str) -> list[Task]:
+def retrieve_scored_tasks(wr: WebsiteRunner) -> list[Task]:
+    html = wr.read_tasks_page()
+
     loc_pattern = r'"(?:problems-)?problemgroups-([^"]+)"'
     short_name_pattern = r"\((.*?)\)"
     solved_pattern = (
