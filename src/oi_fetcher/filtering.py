@@ -1,4 +1,5 @@
 import re
+from dataclasses import dataclass
 
 import pydantic
 import roman
@@ -6,7 +7,8 @@ import roman
 from oi_fetcher.runner import WebsiteRunner
 
 
-class Task(pydantic.BaseModel):
+@dataclass
+class Task:
     subm_id: int
     score: int
     loc: list[str]
