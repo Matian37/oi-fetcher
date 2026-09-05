@@ -3,8 +3,8 @@ import re
 from pathlib import Path
 from time import sleep
 
-from oi_fetcher.filtering import Task
 from oi_fetcher.runner import WebsiteRunner
+from oi_fetcher.tasks import Task
 
 
 def gen_file_path(dir_path: Path, task: Task) -> Path:

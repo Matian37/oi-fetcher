@@ -1,7 +1,7 @@
 import getpass
 
-from oi_fetcher.filtering import scrape_tasks
 from oi_fetcher.runner import WebsiteRunner
+from oi_fetcher.tasks import scrape_tasks
 from oi_fetcher.update import sync_repo
 
 
