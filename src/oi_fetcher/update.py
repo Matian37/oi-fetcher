@@ -1,4 +1,6 @@
 import re
+import shutil
+from dataclasses import dataclass
 from pathlib import Path
 from time import sleep
 from typing import Final
@@ -24,6 +26,7 @@ def gen_subm_directory(repo_path: Path, task: Task) -> Path:
     )
 
 
+# TODO: get info what file format to use for submission
 def gen_subm_file_path(repo_path: Path, task: Task) -> Path:
     score_str = "" if task.score == 100 else str(task.score)
     return gen_subm_directory(repo_path, task) / f"{task.shortname}{score_str}.cpp"
@@ -38,8 +41,26 @@ def match_task(task: Task, filename: str) -> int | None:
     return int(match.group(1) or 100) if match else None
 
 
-def max_local_submission_score(task: Task, task_dir: Path) -> int | None:
+def cleanup_directory(dir: Path, keep_file: str = "") -> None:
+    for entry in dir.glob("*"):
+        if entry.is_dir():
+            shutil.rmtree(entry)
+            continue
+
+        if entry.name == keep_file:
+            continue
+        entry.unlink()
+
+
+@dataclass
+class Submission:
+    filename: str
+    score: int
+
+
+def max_local_submission(task: Task, task_dir: Path) -> Submission | None:
     best_score = -1
+    best_filename: str | None = None
 
     for entry in task_dir.glob("*"):
         if entry.is_dir():
@@ -49,17 +70,27 @@ def max_local_submission_score(task: Task, task_dir: Path) -> int | None:
         if score is None:
             continue
 
-        best_score = max(score, best_score)
+        if best_score < score:
+            best_score = score
+            best_filename = entry.name
 
-    return None if best_score == -1 else best_score
+    if best_filename is None:
+        return None
+    return Submission(best_filename, best_score)
 
 
-def save_solution(task: Task, task_dir: Path, wr: WebsiteRunner):
+def save_solution(task: Task, task_dir: Path, wr: WebsiteRunner) -> Path:
+    """
+    Fetches the solution for the given task and saves it to the task directory.
+    Returns the path to the saved file.
+    """
     subm_file_path = gen_subm_file_path(task_dir, task)
     subm_file_path.parent.mkdir(parents=True, exist_ok=True)
 
     with subm_file_path.open("w", encoding="utf-8") as f:
         f.write(wr.read_submission(task.submission_id))
+
+    return subm_file_path
 
 
 def sync_repo(wr: WebsiteRunner, tasks: list[Task], repo_path: Path) -> None:
@@ -69,10 +100,14 @@ def sync_repo(wr: WebsiteRunner, tasks: list[Task], repo_path: Path) -> None:
     for task in tasks:
         task_dir = gen_subm_directory(repo_path, task)
 
-        best_score = max_local_submission_score(task, task_dir)
-        if best_score is None or best_score < task.score:
+        max_submission = max_local_submission(task, task_dir)
+
+        if max_submission is None or max_submission.score < task.score:
             print(
                 f"📸 Dodawanie zgloszenia  do zadania {task.shortname.upper()} o wyniku {task.score}",
             )
-            save_solution(task, task_dir, wr)
+            subm_file_path = save_solution(task, task_dir, wr)
+            cleanup_directory(task_dir, keep_file=subm_file_path.name)
             sleep(UPDATE_COLLDOWN)
+        else:
+            cleanup_directory(task_dir, keep_file=max_submission.filename)
