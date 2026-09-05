@@ -1,6 +1,6 @@
 import getpass
 
-from oi_fetcher.filtering import retrieve_scored_tasks
+from oi_fetcher.filtering import scrape_tasks
 from oi_fetcher.runner import WebsiteRunner
 from oi_fetcher.update import sync_repo
 
@@ -21,7 +21,7 @@ def main():
 
     with WebsiteRunner() as wr:
         run_login_prompt(wr)
-        tasks = retrieve_scored_tasks(wr)
+        tasks = scrape_tasks(wr)
         sync_repo(wr, tasks)
 
     print("✅ Fetcher zakonczyl pobieranie. Zatrzymywanie fetchera...")

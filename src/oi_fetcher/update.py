@@ -26,7 +26,13 @@ def sync_repo(wr: WebsiteRunner, tasks: list[Task]):
     repo_path.mkdir(exist_ok=True)
 
     for task in tasks:
-        task_dir_path = Path(repo_path, *task.loc)
+        task_dir_path = Path(
+            repo_path,
+            task.location.edition,
+            task.location.stage,
+            task.location.day,
+            task.shortname,
+        )
 
         best_score = -1
 
@@ -59,5 +65,5 @@ def sync_repo(wr: WebsiteRunner, tasks: list[Task]):
 
         file_path.parent.mkdir(parents=True, exist_ok=True)
         with file_path.open("w", encoding="utf-8") as f:
-            f.write(wr.read_submission(task.subm_id))
+            f.write(wr.read_submission(task.submission_id))
             sleep(0.5)
