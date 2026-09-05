@@ -16,11 +16,16 @@ def run_login_prompt(wr: WebsiteRunner):
             print("⛔ Logowanie nie powiodlo sie...")
 
 
-print("🚀 Uruchamianie fetchera...")
+def main():
+    print("🚀 Uruchamianie fetchera...")
 
-with WebsiteRunner() as wr:
-    run_login_prompt(wr)
-    tasks = retrieve_scored_tasks(wr)
-    sync_repo(wr, tasks)
+    with WebsiteRunner() as wr:
+        run_login_prompt(wr)
+        tasks = retrieve_scored_tasks(wr)
+        sync_repo(wr, tasks)
 
-print("✅ Fetcher zakonczyl pobieranie. Zatrzymywanie fetchera...")
+    print("✅ Fetcher zakonczyl pobieranie. Zatrzymywanie fetchera...")
+
+
+if __name__ == "__main__":
+    main()
