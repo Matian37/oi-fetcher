@@ -1,4 +1,5 @@
 import getpass
+from pathlib import Path
 
 from oi_fetcher.runner import WebsiteRunner
 from oi_fetcher.tasks import scrape_tasks
@@ -16,15 +17,30 @@ def run_login_prompt(wr: WebsiteRunner):
             print("⛔ Logowanie nie powiodlo sie...")
 
 
+def repo_path_prompt() -> Path:
+    while True:
+        repo_path = Path(
+            input("Podaj folder oi zawierajacy checkliste i rozwiazania:\n")
+        )
+
+        if repo_path.is_dir():
+            break
+        else:
+            print("⛔ Niepoprawna lub nieistniejaca sciezka do folderu.")
+
+    return repo_path
+
+
 def main():
     print("🚀 Uruchamianie fetchera...")
 
     with WebsiteRunner() as wr:
         run_login_prompt(wr)
         tasks = scrape_tasks(wr)
-        sync_repo(wr, tasks)
+        repo_path = repo_path_prompt()
+        sync_repo(wr, tasks, repo_path)
 
-    print("✅ Fetcher zakonczyl pobieranie. Zatrzymywanie fetchera...")
+    print("✅ Wszystko jest juz aktualne.")
 
 
 if __name__ == "__main__":
