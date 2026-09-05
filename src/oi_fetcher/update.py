@@ -5,7 +5,7 @@ import re
 
 from playwright.sync_api import Page
 
-from filtering import Task
+from oi_fetcher.filtering import Task
 
 _COOLDOWN = timedelta(seconds=0.5)
 _last_read_time = datetime.now()

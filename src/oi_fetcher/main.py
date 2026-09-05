@@ -1,7 +1,7 @@
 from playwright.sync_api import Browser, Page, sync_playwright
 
-from filtering import retrieve_scored_tasks
-from update import sync_repo
+from oi_fetcher.filtering import retrieve_scored_tasks
+from oi_fetcher.update import sync_repo
 
 import getpass
 
