@@ -12,6 +12,10 @@ UPDATE_COLLDOWN: Final[float] = 0.5
 
 
 def gen_submission_regex(task: Task) -> str:
+    """
+    Returns a regex pattern that matches submission filenames for the given task.
+    It only matches filenames according to the checklist rules, which requires them to be in cpp format.
+    """
     assert task.shortname.isalnum()
     return rf"^{re.escape(task.shortname)}(?:([0-9]{{1,2}}|100))?\.cpp$"
 
@@ -26,8 +30,12 @@ def gen_subm_directory(repo_path: Path, task: Task) -> Path:
     )
 
 
-# TODO: get info what file format to use for submission
 def gen_subm_file_path(repo_path: Path, task: Task) -> Path:
+    """
+    Returns the path to the submission file for the given task in the repository.
+    Due to checklist limitations, the filename must be in cpp format.
+    Otherwise, the file will be rejected.
+    """
     score_str = "" if task.score == 100 else str(task.score)
     return gen_subm_directory(repo_path, task) / f"{task.shortname}{score_str}.cpp"
 
