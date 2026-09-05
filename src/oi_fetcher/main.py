@@ -1,9 +1,9 @@
 import getpass
 from pathlib import Path
 
-from oi_fetcher.runner import WebsiteRunner
 from oi_fetcher.tasks import scrape_tasks
 from oi_fetcher.update import sync_repo
+from oi_fetcher.web import WebsiteRunner
 
 
 def run_login_prompt(wr: WebsiteRunner):

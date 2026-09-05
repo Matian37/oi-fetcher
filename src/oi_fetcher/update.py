@@ -5,8 +5,8 @@ from pathlib import Path
 from time import sleep
 from typing import Final
 
-from oi_fetcher.runner import WebsiteRunner
 from oi_fetcher.tasks import Task
+from oi_fetcher.web import WebsiteRunner
 
 UPDATE_COLLDOWN: Final[float] = 0.5
 

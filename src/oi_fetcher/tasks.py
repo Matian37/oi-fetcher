@@ -2,7 +2,7 @@ import re
 from dataclasses import dataclass
 
 from oi_fetcher.parse import Location, parse_location
-from oi_fetcher.runner import WebsiteRunner
+from oi_fetcher.web import WebsiteRunner
 
 LOCATION_PATTERN = r'"(?:problems-)?problemgroups-([^"]+)"'
 SUBMISSION_PATTERN = (
