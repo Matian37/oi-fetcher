@@ -6,7 +6,7 @@ from oi_fetcher.tasks import scrape_tasks
 from oi_fetcher.web import WebsiteRunner
 
 
-def run_login_prompt(wr: WebsiteRunner):
+def run_login_prompt(wr: WebsiteRunner) -> None:
     while True:
         login = input("Podaj nazwe uzytkownika na szkopule:\n")
         password = getpass.getpass("Podaj haslo (wpisywanie niewidoczne):\n")
@@ -17,7 +17,7 @@ def run_login_prompt(wr: WebsiteRunner):
             print("⛔ Logowanie nie powiodlo sie...")
 
 
-def repo_path_prompt() -> Path:
+def run_repo_path_prompt() -> Path:
     while True:
         repo_path = Path(
             input("Podaj folder oi zawierajacy checkliste i rozwiazania:\n")
@@ -37,7 +37,7 @@ def main():
     with WebsiteRunner() as wr:
         run_login_prompt(wr)
         tasks = scrape_tasks(wr)
-        repo_path = repo_path_prompt()
+        repo_path = run_repo_path_prompt()
         sync_repo(wr, tasks, repo_path)
 
     print("✅ Wszystko jest juz aktualne.")
