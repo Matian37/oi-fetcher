@@ -20,19 +20,19 @@ def __parse_edition(value: str) -> str:
     assert value.isdecimal()
     edition = int(value)
 
-    assert edition <= MAX_CHECKLIST_EDITION
+    assert 0 < edition <= MAX_CHECKLIST_EDITION
 
     return roman.toRoman(edition).lower()
 
 
 def __parse_stage(value: str) -> str:
-    if value == "dzien0":
-        value = "probne"
     assert value in CHECKLIST_STAGES
     return value
 
 
 def __parse_day(value: str) -> str:
+    if value == "dzien0":
+        value = "probne"
     assert value in CHECKLIST_DAYS
     return value
 
