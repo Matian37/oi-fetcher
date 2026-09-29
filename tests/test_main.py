@@ -85,3 +85,6 @@ def test_run_repo_path_prompt_file(mocker: MockerFixture, tmp_path: Path) -> Non
     file = tmp_path / "file"
     file.write_text("content")
     _run_repo_path_prompt(mocker, tmp_path, bad_path=file)
+
+
+# TODO: add tests for main function
