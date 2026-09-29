@@ -1,0 +1,46 @@
+[
+  {
+    "submission_id": 4769300,
+    "shortname": "dwa",
+    "score": 100,
+    "location": {
+      "edition": "xxv",
+      "stage": "etap3",
+      "day": "probne",
+      "shortname": "dwa"
+    }
+  },
+  {
+    "submission_id": 4769307,
+    "shortname": "bon",
+    "score": 100,
+    "location": {
+      "edition": "xix",
+      "stage": "etap2",
+      "day": "dzien1",
+      "shortname": "bon"
+    }
+  },
+  {
+    "submission_id": 4769308,
+    "shortname": "sza",
+    "score": 100,
+    "location": {
+      "edition": "xix",
+      "stage": "etap2",
+      "day": "dzien1",
+      "shortname": "sza"
+    }
+  },
+  {
+    "submission_id": 4769304,
+    "shortname": "pod",
+    "score": 8,
+    "location": {
+      "edition": "vii",
+      "stage": "etap2",
+      "day": "probne",
+      "shortname": "pod"
+    }
+  }
+]
