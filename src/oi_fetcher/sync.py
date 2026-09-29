@@ -67,8 +67,7 @@ class Submission:
 
 
 def max_local_submission(task: Task, task_dir: Path) -> Submission | None:
-    best_score = -1
-    best_filename: str | None = None
+    best_subm: tuple[int, str] = (-1, "")
 
     for entry in task_dir.glob("*"):
         if entry.is_dir():
@@ -78,13 +77,12 @@ def max_local_submission(task: Task, task_dir: Path) -> Submission | None:
         if score is None:
             continue
 
-        if best_score < score:
-            best_score = score
-            best_filename = entry.name
+        best_subm = max(best_subm, (score, entry.name))
 
-    if best_filename is None:
+    # if no submission was found, return None
+    if best_subm[0] == -1:
         return None
-    return Submission(best_filename, best_score)
+    return Submission(filename=best_subm[1], score=best_subm[0])
 
 
 def save_solution(task: Task, task_dir: Path, wr: WebsiteRunner) -> Path:
