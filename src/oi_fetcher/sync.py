@@ -85,12 +85,12 @@ def max_local_submission(task: Task, task_dir: Path) -> Submission | None:
     return Submission(filename=best_subm[1], score=best_subm[0])
 
 
-def save_solution(task: Task, task_dir: Path, wr: WebsiteRunner) -> Path:
+def save_solution(task: Task, repo_path: Path, wr: WebsiteRunner) -> Path:
     """
     Fetches the solution for the given task and saves it to the task directory.
     Returns the path to the saved file.
     """
-    subm_file_path = gen_subm_file_path(task_dir, task)
+    subm_file_path = gen_subm_file_path(repo_path, task)
     subm_file_path.parent.mkdir(parents=True, exist_ok=True)
 
     with subm_file_path.open("w", encoding="utf-8") as f:
@@ -112,7 +112,7 @@ def sync_repo(wr: WebsiteRunner, tasks: list[Task], repo_path: Path) -> None:
             print(
                 f"📸 Dodawanie zgloszenia  do zadania {task.shortname.upper()} o wyniku {task.score}",
             )
-            subm_file_path = save_solution(task, task_dir, wr)
+            subm_file_path = save_solution(task, repo_path, wr)
             cleanup_directory(task_dir, keep_file=subm_file_path.name)
             sleep(UPDATE_COLLDOWN)
         else:
