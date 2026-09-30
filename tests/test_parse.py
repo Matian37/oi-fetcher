@@ -6,10 +6,10 @@ from oi_fetcher.parse import (
     CHECKLIST_MAX_EDITION,
     CHECKLIST_STAGES,
     Location,
-    __parse_day,
-    __parse_edition,
-    __parse_shortname,
-    __parse_stage,
+    _parse_day,
+    _parse_edition,
+    _parse_shortname,
+    _parse_stage,
     parse_location,
 )
 
@@ -23,7 +23,7 @@ from oi_fetcher.parse import (
 )
 def test_parse_edition_invalid(value: str) -> None:
     with pytest.raises(AssertionError):
-        __parse_edition(value)
+        _parse_edition(value)
 
 
 @pytest.mark.unit
@@ -32,7 +32,7 @@ def test_parse_edition_invalid(value: str) -> None:
     [("1", "i"), ("28", "xxviii"), (str(CHECKLIST_MAX_EDITION), "xxxii")],
 )
 def test_parse_edition_valid(value: str, expected: str) -> None:
-    assert __parse_edition(value) == expected
+    assert _parse_edition(value) == expected
 
 
 @pytest.mark.unit
@@ -48,13 +48,13 @@ def test_parse_edition_valid(value: str, expected: str) -> None:
 )
 def test_parse_stage_invalid(value: str) -> None:
     with pytest.raises(AssertionError):
-        __parse_stage(value)
+        _parse_stage(value)
 
 
 @pytest.mark.unit
 @pytest.mark.parametrize(("value", "expected"), CHECKLIST_STAGES.items())
 def test_parse_stage_valid(value: str, expected: str) -> None:
-    assert __parse_stage(value) == expected
+    assert _parse_stage(value) == expected
 
 
 @pytest.mark.unit
@@ -70,24 +70,24 @@ def test_parse_stage_valid(value: str, expected: str) -> None:
 )
 def test_parse_day_invalid(value: str) -> None:
     with pytest.raises(AssertionError):
-        __parse_day(value)
+        _parse_day(value)
 
 
 @pytest.mark.unit
 @pytest.mark.parametrize(("value", "expected"), CHECKLIST_DAYS.items())
 def test_parse_day_valid(value: str, expected: str) -> None:
-    assert __parse_day(value) == expected
+    assert _parse_day(value) == expected
 
 
 @pytest.mark.unit
 def test_parse_shortname_invalid() -> None:
     with pytest.raises(AssertionError):
-        __parse_shortname("")
+        _parse_shortname("")
 
 
 @pytest.mark.unit
 def test_parse_shortname_valid() -> None:
-    assert __parse_shortname("foo") == "foo"
+    assert _parse_shortname("foo") == "foo"
 
 
 @pytest.mark.unit

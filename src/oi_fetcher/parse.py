@@ -30,7 +30,7 @@ class Location:
     day: str | None
 
 
-def __parse_edition(value: str) -> str:
+def _parse_edition(value: str) -> str:
     assert value.isdecimal()
     edition = int(value)
 
@@ -39,17 +39,17 @@ def __parse_edition(value: str) -> str:
     return roman.toRoman(edition).lower()
 
 
-def __parse_stage(value: str) -> str:
+def _parse_stage(value: str) -> str:
     assert value in CHECKLIST_STAGES
     return CHECKLIST_STAGES[value]
 
 
-def __parse_day(value: str) -> str:
+def _parse_day(value: str) -> str:
     assert value in CHECKLIST_DAYS
     return CHECKLIST_DAYS[value]
 
 
-def __parse_shortname(value: str) -> str:
+def _parse_shortname(value: str) -> str:
     assert value
     return value
 
@@ -60,9 +60,9 @@ def parse_location(location: list[str]) -> Location | None:
 
     try:
         return Location(
-            edition=__parse_edition(location[0]),
-            stage=__parse_stage(location[1]),
-            day=__parse_day(location[2]) if len(location) == 3 else None,
+            edition=_parse_edition(location[0]),
+            stage=_parse_stage(location[1]),
+            day=_parse_day(location[2]) if len(location) == 3 else None,
         )
     except AssertionError:
         return None
