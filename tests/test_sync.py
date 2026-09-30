@@ -26,7 +26,7 @@ def make_task(
     submission_id: int = 1,
     edition: str = "xxviii",
     stage: str = "etap1",
-    day: str = "probne",
+    day: str | None = "probne",
 ) -> Task:
     return Task(
         submission_id=submission_id,
@@ -36,7 +36,6 @@ def make_task(
             edition=edition,
             stage=stage,
             day=day,
-            shortname=shortname,
         ),
     )
 
@@ -109,6 +108,16 @@ class TestGenSubmDirectory:
         assert gen_subm_directory(tmp_path, task) == (
             tmp_path / "xxviii" / "etap1" / "probne" / "sho"
         )
+
+    @pytest.mark.unit
+    def test_omits_missing_day(self, tmp_path: Path) -> None:
+        task = make_task(
+            shortname="sho",
+            edition="xxx",
+            stage="etap1",
+            day=None,
+        )
+        assert gen_subm_directory(tmp_path, task) == tmp_path / "xxx" / "etap1" / "sho"
 
 
 class TestGenSubmFilePath:
@@ -321,16 +330,16 @@ class TestSyncRepo:
         assert run.printed == []
 
     @pytest.mark.unit
+    @pytest.mark.parametrize("day", [None, "d1"])
     def test_new_submission_to_new_task(
-        self, tmp_path: Path, mocker: MockerFixture
+        self, tmp_path: Path, mocker: MockerFixture, day: str | None
     ) -> None:
         (tmp_path / "rozwiazania").mkdir()
-        task = make_task(shortname="sho", score=100, submission_id=3)
+        task = make_task(shortname="sho", score=100, submission_id=3, day=day)
 
         run = _run_sync(mocker, tmp_path, [task])
 
-        task_dir = gen_subm_directory(tmp_path, task)
-        assert (task_dir / "sho.cpp").read_text() == "code"
+        assert (gen_subm_directory(tmp_path, task) / "sho.cpp").read_text() == "code"
         run.read_submission.assert_called_once_with(3)
         run.sleep.assert_called_once()
         assert run.printed  # check that the notice was printed

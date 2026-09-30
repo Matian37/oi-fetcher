@@ -3,38 +3,50 @@ from typing import Final
 
 import roman
 
-MAX_CHECKLIST_EDITION: Final[int] = 32
-CHECKLIST_STAGES: Final[set[str]] = {"etap1", "etap2", "etap3"}
-CHECKLIST_DAYS: Final[set[str]] = {"probne", "dzien1", "dzien2", "dzien3"}
+CHECKLIST_MAX_EDITION: Final[int] = 32
+
+CHECKLIST_STAGES: Final[dict[str, str]] = {
+    "e1": "etap1",
+    "e2": "etap2",
+    "e3": "etap3",
+}
+
+CHECKLIST_DAYS: Final[dict[str, str]] = {
+    "d0": "probne",
+    "d1": "dzien1",
+    "d2": "dzien2",
+    "d3": "dzien3",
+}
 
 
 @dataclass
 class Location:
+    """
+    Represents a location in the OI checklist with already parsed values.
+    """
+
     edition: str
     stage: str
-    day: str
-    shortname: str
+    day: str | None
 
 
 def __parse_edition(value: str) -> str:
     assert value.isdecimal()
     edition = int(value)
 
-    assert 0 < edition <= MAX_CHECKLIST_EDITION
+    assert 0 < edition <= CHECKLIST_MAX_EDITION
 
     return roman.toRoman(edition).lower()
 
 
 def __parse_stage(value: str) -> str:
     assert value in CHECKLIST_STAGES
-    return value
+    return CHECKLIST_STAGES[value]
 
 
 def __parse_day(value: str) -> str:
-    if value == "dzien0":
-        value = "probne"
     assert value in CHECKLIST_DAYS
-    return value
+    return CHECKLIST_DAYS[value]
 
 
 def __parse_shortname(value: str) -> str:
@@ -43,17 +55,14 @@ def __parse_shortname(value: str) -> str:
 
 
 def parse_location(location: list[str]) -> Location | None:
-    if len(location) != 4:
+    if len(location) < 2 or len(location) != (2 if location[1] == "e1" else 3):
         return None
-
-    edition, stage, day, shortname = location
 
     try:
         return Location(
-            edition=__parse_edition(edition),
-            stage=__parse_stage(stage),
-            day=__parse_day(day),
-            shortname=__parse_shortname(shortname),
+            edition=__parse_edition(location[0]),
+            stage=__parse_stage(location[1]),
+            day=__parse_day(location[2]) if len(location) == 3 else None,
         )
     except AssertionError:
         return None

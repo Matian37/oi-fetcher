@@ -1,13 +1,21 @@
 [
   {
+    "submission_id": 4771317,
+    "shortname": "ply",
+    "score": 100,
+    "location": {
+      "edition": "xxx",
+      "stage": "etap1"
+    }
+  },
+  {
     "submission_id": 4769300,
     "shortname": "dwa",
     "score": 100,
     "location": {
       "edition": "xxv",
       "stage": "etap3",
-      "day": "probne",
-      "shortname": "dwa"
+      "day": "probne"
     }
   },
   {
@@ -17,8 +25,7 @@
     "location": {
       "edition": "xix",
       "stage": "etap2",
-      "day": "dzien1",
-      "shortname": "bon"
+      "day": "dzien1"
     }
   },
   {
@@ -28,8 +35,7 @@
     "location": {
       "edition": "xix",
       "stage": "etap2",
-      "day": "dzien1",
-      "shortname": "sza"
+      "day": "dzien1"
     }
   },
   {
@@ -39,8 +45,7 @@
     "location": {
       "edition": "vii",
       "stage": "etap2",
-      "day": "probne",
-      "shortname": "pod"
+      "day": "probne"
     }
   }
 ]

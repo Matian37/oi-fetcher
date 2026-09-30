@@ -21,13 +21,14 @@ def gen_submission_regex(task: Task) -> str:
 
 
 def gen_subm_directory(repo_path: Path, task: Task) -> Path:
-    return Path(
-        repo_path,
-        task.location.edition,
-        task.location.stage,
-        task.location.day,
-        task.shortname,
-    )
+    path: list[str] = [str(repo_path), task.location.edition, task.location.stage]
+
+    if task.location.day is not None:
+        path.append(task.location.day)
+
+    path.append(task.shortname)
+
+    return Path(*path)
 
 
 def gen_subm_file_path(repo_path: Path, task: Task) -> Path:
