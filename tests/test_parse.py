@@ -148,5 +148,5 @@ class TestParseLocation:
             ("e3", None),
         ],
     )
-    def test_parse_location_no_day(stage: str, expected: Location | None) -> None:
+    def test_parse_location_no_day(self, stage: str, expected: Location | None) -> None:
         assert parse_location(["28", stage]) == expected
