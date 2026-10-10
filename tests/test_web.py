@@ -1,7 +1,6 @@
 import pytest
 import requests
 from pytest_mock import MockerFixture
-from requests.cookies import cookiejar_from_dict
 
 from oi_downloader.exceptions import (
     AlreadyLoggedInError,
@@ -20,6 +19,7 @@ from oi_downloader.web import (
     TASKS_PAGE,
     Website,
 )
+from tests.helpers import make_response
 
 CSRF_FORM = '<input type="hidden" name="csrfmiddlewaretoken" value="mid">'
 
@@ -306,18 +306,6 @@ class TestReadSubmissionCode:
 
 
 class TestWebsiteWorkflow:
-    @staticmethod
-    def make_response(
-        text: str = "",
-        status_code: int = 200,
-        cookies: dict[str, str] | None = None,
-    ) -> requests.Response:
-        response = requests.Response()
-        response.status_code = status_code
-        response._content = text.encode("utf-8")
-        response.cookies = cookiejar_from_dict(cookies or {})
-        return response
-
     def test_usual_workflow(self, mocker: MockerFixture) -> None:
         TASKS_HTML = (
             '<div class="card" id="problems-problemgroups-10-e2-d0">\n'
@@ -336,21 +324,19 @@ class TestWebsiteWorkflow:
         ) -> requests.Response:
             get_calls.append((url, cookies))
             return {
-                HOME_PAGE: self.make_response(
-                    CSRF_FORM, cookies={"csrftoken": "csrf-home"}
-                ),
-                TASKS_PAGE: self.make_response(TASKS_HTML),
-                SUBMISSION_PAGE.format(101): self.make_response(SUBMISSION_HTML),
+                HOME_PAGE: make_response(CSRF_FORM, cookies={"csrftoken": "csrf-home"}),
+                TASKS_PAGE: make_response(TASKS_HTML),
+                SUBMISSION_PAGE.format(101): make_response(SUBMISSION_HTML),
             }[url]
 
         def fake_post(url: str, **kwargs) -> requests.Response:
             post_calls.append({"url": url, **kwargs})
             return {
-                LOGIN_PAGE: self.make_response(
+                LOGIN_PAGE: make_response(
                     status_code=302,
                     cookies={"sessionid": "sid", "csrftoken": "csrf-auth"},
                 ),
-                LOGOUT_PAGE: self.make_response(),
+                LOGOUT_PAGE: make_response(),
             }[url]
 
         mocker.patch("oi_downloader.web.requests.get", side_effect=fake_get)
