@@ -8,13 +8,13 @@ from pytest_mock import MockerFixture, MockType
 from oi_fetcher.parse import Location
 from oi_fetcher.sync import (
     Submission,
-    cleanup_directory,
-    gen_subm_directory,
-    gen_subm_file_path,
-    gen_submission_regex,
-    match_task,
-    max_local_submission,
-    save_solution,
+    _cleanup_directory,
+    _gen_subm_directory,
+    _gen_subm_file_path,
+    _gen_submission_regex,
+    _match_task,
+    _max_local_submission,
+    _save_solution,
     sync_repo,
 )
 from oi_fetcher.tasks import Task
@@ -55,10 +55,10 @@ class TestGenSubmissionRegex:
     )
     def test_invalid_shortname(self, shortname: str) -> None:
         with pytest.raises(AssertionError):
-            gen_submission_regex(make_task(shortname=shortname))
+            _gen_submission_regex(make_task(shortname=shortname))
 
     def test_valid_shortname(self) -> None:
-        pattern = gen_submission_regex(make_task(shortname="abc"))
+        pattern = _gen_submission_regex(make_task(shortname="abc"))
         assert re.match(pattern, "abc.cpp")
 
     @pytest.mark.parametrize(
@@ -71,7 +71,7 @@ class TestGenSubmissionRegex:
         ],
     )
     def test_matches(self, filename: str, expected_group: str | None) -> None:
-        match = re.match(gen_submission_regex(make_task(shortname="x")), filename)
+        match = re.match(_gen_submission_regex(make_task(shortname="x")), filename)
         assert match is not None
         assert match.group(1) == expected_group
 
@@ -88,7 +88,7 @@ class TestGenSubmissionRegex:
     )
     def test_does_not_match(self, filename: str) -> None:
         assert (
-            re.match(gen_submission_regex(make_task(shortname="x")), filename) is None
+            re.match(_gen_submission_regex(make_task(shortname="x")), filename) is None
         )
 
 
@@ -100,7 +100,7 @@ class TestGenSubmDirectory:
             stage="etap1",
             day="probne",
         )
-        assert gen_subm_directory(tmp_path, task) == (
+        assert _gen_subm_directory(tmp_path, task) == (
             tmp_path / "xxviii" / "etap1" / "probne" / "sho"
         )
 
@@ -111,7 +111,7 @@ class TestGenSubmDirectory:
             stage="etap1",
             day=None,
         )
-        assert gen_subm_directory(tmp_path, task) == tmp_path / "xxx" / "etap1" / "sho"
+        assert _gen_subm_directory(tmp_path, task) == tmp_path / "xxx" / "etap1" / "sho"
 
 
 class TestGenSubmFilePath:
@@ -123,9 +123,9 @@ class TestGenSubmFilePath:
         self, tmp_path: Path, score: int, expected_name: str
     ) -> None:
         task = make_task(shortname="sho", score=score)
-        path = gen_subm_file_path(tmp_path, task)
+        path = _gen_subm_file_path(tmp_path, task)
         assert path.name == expected_name
-        assert path == gen_subm_directory(tmp_path, task) / expected_name
+        assert path == _gen_subm_directory(tmp_path, task) / expected_name
 
 
 class TestMatchTask:
@@ -142,12 +142,12 @@ class TestMatchTask:
         ],
     )
     def test_returns_score_or_none(self, filename: str, expected: int | None) -> None:
-        assert match_task(make_task(shortname="x"), filename) == expected
+        assert _match_task(make_task(shortname="x"), filename) == expected
 
 
 class TestCleanupDirectory:
     def test_empty_dir(self, tmp_path: Path) -> None:
-        cleanup_directory(tmp_path)
+        _cleanup_directory(tmp_path)
         assert list(tmp_path.iterdir()) == []
 
     def test_removes_files_and_nested_dirs(self, tmp_path: Path) -> None:
@@ -158,7 +158,7 @@ class TestCleanupDirectory:
         nested.mkdir()
         (nested / "c.cpp").write_text("c")
 
-        cleanup_directory(tmp_path)
+        _cleanup_directory(tmp_path)
 
         assert list(tmp_path.iterdir()) == []
 
@@ -167,7 +167,7 @@ class TestCleanupDirectory:
         keep.write_text("keep")
         (tmp_path / "remove.cpp").write_text("remove")
 
-        cleanup_directory(tmp_path, keep_file="keep.cpp")
+        _cleanup_directory(tmp_path, keep_file="keep.cpp")
 
         assert keep.read_text() == "keep"
         assert not (tmp_path / "remove.cpp").exists()
@@ -178,27 +178,27 @@ class TestCleanupDirectory:
         same_name_dir.mkdir()
         (same_name_dir / "inner.cpp").write_text("inner")
 
-        cleanup_directory(tmp_path, keep_file="keep.cpp")
+        _cleanup_directory(tmp_path, keep_file="keep.cpp")
 
         assert not same_name_dir.exists()
 
 
 class TestMaxLocalSubmission:
     def test_no_tasks(self, tmp_path: Path) -> None:
-        assert max_local_submission(make_task(shortname="x"), tmp_path) is None
+        assert _max_local_submission(make_task(shortname="x"), tmp_path) is None
 
     def test_different_shortnames(self, tmp_path: Path) -> None:
         # two files with a different shortname from searched one
         (tmp_path / "y1.cpp").write_text("")
         (tmp_path / "y2.cpp").write_text("")
 
-        assert max_local_submission(make_task(shortname="x"), tmp_path) is None
+        assert _max_local_submission(make_task(shortname="x"), tmp_path) is None
 
     def test_picks_matching_task(self, tmp_path: Path) -> None:
         (tmp_path / "x50.cpp").write_text("")
         (tmp_path / "y49.cpp").write_text("")
 
-        result = max_local_submission(make_task(shortname="y"), tmp_path)
+        result = _max_local_submission(make_task(shortname="y"), tmp_path)
 
         assert result == Submission(filename="y49.cpp", score=49)
 
@@ -217,7 +217,7 @@ class TestMaxLocalSubmission:
         task_dir = mocker.Mock()
         task_dir.glob.return_value = entries
 
-        result = max_local_submission(make_task(shortname="x"), task_dir)
+        result = _max_local_submission(make_task(shortname="x"), task_dir)
 
         assert result == Submission(filename="x100.cpp", score=100)
         task_dir.glob.assert_called_once_with("*")
@@ -231,9 +231,9 @@ class TestSaveSolution:
         wr.read_submission_code.return_value = "code"
         task = make_task(shortname="sho", score=42, submission_id=7)
 
-        path = save_solution(task, tmp_path, wr)
+        path = _save_solution(task, tmp_path, wr)
 
-        assert path == gen_subm_file_path(tmp_path, task)
+        assert path == _gen_subm_file_path(tmp_path, task)
         assert path.read_text() == "code"
         wr.read_submission_code.assert_called_once_with(7)
 
@@ -241,11 +241,11 @@ class TestSaveSolution:
         wr = mocker.Mock()
         wr.read_submission_code.return_value = "code"
         task = make_task(shortname="sho", score=42, submission_id=3)
-        gen_subm_directory(tmp_path, task).mkdir(parents=True)
+        _gen_subm_directory(tmp_path, task).mkdir(parents=True)
 
-        path = save_solution(task, tmp_path, wr)
+        path = _save_solution(task, tmp_path, wr)
 
-        assert path == gen_subm_file_path(tmp_path, task)
+        assert path == _gen_subm_file_path(tmp_path, task)
         assert path.read_text() == "code"
         wr.read_submission_code.assert_called_once_with(3)
 
@@ -256,11 +256,11 @@ class TestSaveSolution:
         wr.read_submission_code.return_value = "old code"
         task = make_task(shortname="sho", score=42)
 
-        path = save_solution(task, tmp_path, wr)
+        path = _save_solution(task, tmp_path, wr)
         assert path.read_text() == "old code"
 
         wr.read_submission_code.return_value = "new code"
-        result = save_solution(task, tmp_path, wr)
+        result = _save_solution(task, tmp_path, wr)
 
         assert result == path
         assert path.read_text() == "new code"
@@ -318,7 +318,7 @@ class TestSyncRepo:
 
         run = _run_sync(mocker, tmp_path, [task])
 
-        assert (gen_subm_directory(tmp_path, task) / "sho.cpp").read_text() == "code"
+        assert (_gen_subm_directory(tmp_path, task) / "sho.cpp").read_text() == "code"
         run.read_submission_code.assert_called_once_with(3)
         run.sleep.assert_called_once()
         assert run.printed  # check that the notice was printed
@@ -328,7 +328,7 @@ class TestSyncRepo:
     ) -> None:
         (tmp_path / "rozwiazania").mkdir()
         task = make_task(shortname="sho", score=100)
-        task_dir = gen_subm_directory(tmp_path, task)
+        task_dir = _gen_subm_directory(tmp_path, task)
         task_dir.mkdir(parents=True)
         (task_dir / "sho50.cpp").write_text("old")
         (task_dir / "dummy.txt").write_text("dummy")
@@ -359,7 +359,7 @@ class TestSyncRepo:
     ) -> None:
         (tmp_path / "rozwiazania").mkdir()
         task = make_task(shortname="sho", score=99)
-        task_dir = gen_subm_directory(tmp_path, task)
+        task_dir = _gen_subm_directory(tmp_path, task)
         task_dir.mkdir(parents=True)
         (task_dir / local_name).write_text("local")
         (task_dir / "dummy.txt").write_text("dummy")
@@ -382,10 +382,10 @@ class TestSyncRepo:
         )
 
         assert (
-            gen_subm_directory(tmp_path, first) / "aaa.cpp"
+            _gen_subm_directory(tmp_path, first) / "aaa.cpp"
         ).read_text() == "first code"
         assert (
-            gen_subm_directory(tmp_path, second) / "bbb50.cpp"
+            _gen_subm_directory(tmp_path, second) / "bbb50.cpp"
         ).read_text() == "second code"
         assert run.read_submission_code.call_count == 2
         assert run.sleep.call_count == 2

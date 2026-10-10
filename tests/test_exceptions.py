@@ -1,5 +1,3 @@
-import pytest
-
 from oi_fetcher.exceptions import WebsiteError
 
 

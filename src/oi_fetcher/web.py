@@ -43,7 +43,7 @@ class Website:
     logged_in: bool = False
 
     @property
-    def cookies(self) -> dict[str, str]:
+    def _cookies(self) -> dict[str, str]:
         cookies: dict[str, str] = {}
 
         if self.session_id is not None:
@@ -53,9 +53,9 @@ class Website:
 
         return cookies
 
-    def read_page(self, url: str) -> str:
+    def _read_page(self, url: str) -> str:
         try:
-            response = requests.get(url, cookies=self.cookies)
+            response = requests.get(url, cookies=self._cookies)
             response.raise_for_status()
         except requests.RequestException as e:
             raise WebsiteError() from e
@@ -71,7 +71,7 @@ class Website:
         if self.logged_in:
             raise AlreadyLoggedInError()
 
-        home = self.read_page(HOME_PAGE)
+        home = self._read_page(HOME_PAGE)
 
         match = CSRF_PATTERN.search(home)
         if match is None:
@@ -90,7 +90,7 @@ class Website:
                     "auth-username": login,
                     "auth-password": password,
                 },
-                cookies=self.cookies,
+                cookies=self._cookies,
                 headers={"Referer": HOME_PAGE},
             )
             response.raise_for_status()
@@ -112,13 +112,13 @@ class Website:
     def read_tasks_page(self) -> str:
         if not self.logged_in:
             raise NotLoggedInError()
-        return self.read_page(TASKS_PAGE)
+        return self._read_page(TASKS_PAGE)
 
     def read_submission_code(self, submission_id: int) -> str:
         if not self.logged_in:
             raise NotLoggedInError()
 
-        page = self.read_page(SUBMISSION_PAGE.format(submission_id))
+        page = self._read_page(SUBMISSION_PAGE.format(submission_id))
 
         match = SOURCE_PATTERN.search(page)
         if match is None:

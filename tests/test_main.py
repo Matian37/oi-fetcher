@@ -1,6 +1,5 @@
 from pathlib import Path
 
-import pytest
 from pytest_mock import MockerFixture
 
 from oi_fetcher import main

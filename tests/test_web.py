@@ -33,7 +33,7 @@ class TestCookies:
         expected: dict[str, str],
     ) -> None:
         website = Website(session_id=session_id, csrf_token=csrf_token)
-        assert website.cookies == expected
+        assert website._cookies == expected
 
 
 class TestReadPage:
@@ -47,7 +47,7 @@ class TestReadPage:
         response.cookies = {"csrftoken": "new"}
         get = mocker.patch("oi_fetcher.web.requests.get", return_value=response)
 
-        assert website.read_page("https://szkopul.edu.pl/contests") == "content"
+        assert website._read_page("https://szkopul.edu.pl/contests") == "content"
         assert website.csrf_token == "new"
         get.assert_called_once_with(
             "https://szkopul.edu.pl/contests",
@@ -64,7 +64,7 @@ class TestReadPage:
         mocker.patch("oi_fetcher.web.requests.get", return_value=response)
 
         with pytest.raises(MissingCsrfTokenError):
-            website.read_page("/")
+            website._read_page("/")
 
         assert website.csrf_token == "old"
 
@@ -75,7 +75,7 @@ class TestReadPage:
         )
 
         with pytest.raises(WebsiteError):
-            Website().read_page("/")
+            Website()._read_page("/")
 
 
 class TestLogin:
@@ -182,10 +182,10 @@ class TestReadTasksPage:
     def test_fetches_archive(self, mocker: MockerFixture) -> None:
         website = Website()
         website.logged_in = True
-        read_page = mocker.patch.object(website, "read_page", return_value="html")
+        _read_page = mocker.patch.object(website, "_read_page", return_value="html")
 
         assert website.read_tasks_page() == "html"
-        read_page.assert_called_once_with("https://szkopul.edu.pl/task_archive/oi/")
+        _read_page.assert_called_once_with("https://szkopul.edu.pl/task_archive/oi/")
 
 
 class TestReadSubmissionCode:
@@ -201,13 +201,13 @@ class TestReadSubmissionCode:
         website = Website()
         website.logged_in = True
         html = f"{pre_tag}#include &lt;bits/stdc++.h&gt;\nusing namespace std;\n</pre>"
-        read_page = mocker.patch.object(website, "read_page", return_value=html)
+        _read_page = mocker.patch.object(website, "_read_page", return_value=html)
 
         assert (
             website.read_submission_code(42)
             == "#include <bits/stdc++.h>\nusing namespace std;\n"
         )
-        read_page.assert_called_once_with("https://szkopul.edu.pl/s/42/source/")
+        _read_page.assert_called_once_with("https://szkopul.edu.pl/s/42/source/")
 
     @pytest.mark.parametrize(
         "html",
@@ -221,7 +221,7 @@ class TestReadSubmissionCode:
     def test_missing_source(self, mocker: MockerFixture, html: str) -> None:
         website = Website()
         website.logged_in = True
-        mocker.patch.object(website, "read_page", return_value=html)
+        mocker.patch.object(website, "_read_page", return_value=html)
 
         with pytest.raises(MissingSourceError):
             website.read_submission_code(42)
