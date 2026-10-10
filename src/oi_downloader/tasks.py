@@ -2,14 +2,14 @@ import re
 from dataclasses import dataclass
 from typing import Final
 
-from oi_fetcher.parse import (
+from oi_downloader.parse import (
     Location,
     parse_location,
     parse_score,
     parse_shortname,
     parse_submission_id,
 )
-from oi_fetcher.web import Website
+from oi_downloader.web import Website
 
 LOCATION_PATTERN: Final[str] = (
     r'^\s*+<div\s++class="[^"]++"\s++id="problems-problemgroups-(?P<location1>[^"]++)">[^\S\n]*+$'

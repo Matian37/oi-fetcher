@@ -4,8 +4,8 @@ from pathlib import Path
 import pytest
 from pytest_mock import MockerFixture
 
-from oi_fetcher.parse import Location
-from oi_fetcher.tasks import Task, scrape_tasks
+from oi_downloader.parse import Location
+from oi_downloader.tasks import Task, scrape_tasks
 
 TESTDATA_DIR = Path(__file__).parent / "testdata"
 
@@ -56,7 +56,7 @@ class TestScrapeTasks:
     def test_propagates_parse_assertion(
         self, mocker: MockerFixture, parser_name: str
     ) -> None:
-        mocker.patch(f"oi_fetcher.tasks.{parser_name}", side_effect=AssertionError)
+        mocker.patch(f"oi_downloader.tasks.{parser_name}", side_effect=AssertionError)
         html = """
         <div class="x" id="problems-problemgroups-10-e2-d0">
         <a href="x">Foo (foo)</a>

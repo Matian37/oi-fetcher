@@ -5,8 +5,8 @@ from pathlib import Path
 import pytest
 from pytest_mock import MockerFixture, MockType
 
-from oi_fetcher.parse import Location
-from oi_fetcher.sync import (
+from oi_downloader.parse import Location
+from oi_downloader.sync import (
     SOLUTIONS_FOLDER,
     Submission,
     _cleanup_directory,
@@ -18,7 +18,7 @@ from oi_fetcher.sync import (
     _save_solution,
     sync_repo,
 )
-from oi_fetcher.tasks import Task
+from oi_downloader.tasks import Task
 
 
 def make_task(
@@ -291,7 +291,7 @@ def _run_sync(
     else:
         wr.read_submission_code.return_value = code
 
-    sleep = mocker.patch("oi_fetcher.sync.sleep")
+    sleep = mocker.patch("oi_downloader.sync.sleep")
     printed: list[str] = []
     mocker.patch("builtins.print", printed.append)
 

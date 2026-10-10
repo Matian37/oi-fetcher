@@ -2,7 +2,7 @@ import pytest
 import requests
 from pytest_mock import MockerFixture
 
-from oi_fetcher.exceptions import (
+from oi_downloader.exceptions import (
     AlreadyLoggedInError,
     LoginFailedError,
     MissingCsrfMiddlewareTokenError,
@@ -11,7 +11,7 @@ from oi_fetcher.exceptions import (
     NotLoggedInError,
     WebsiteError,
 )
-from oi_fetcher.web import Website
+from oi_downloader.web import Website
 
 CSRF_FORM = '<input type="hidden" name="csrfmiddlewaretoken" value="tok">'
 
@@ -45,7 +45,7 @@ class TestReadPage:
         response = mocker.Mock()
         response.text = "content"
         response.cookies = {"csrftoken": "new"}
-        get = mocker.patch("oi_fetcher.web.requests.get", return_value=response)
+        get = mocker.patch("oi_downloader.web.requests.get", return_value=response)
 
         assert website._read_page("https://szkopul.edu.pl/contests") == "content"
         assert website.csrf_token == "new"
@@ -61,7 +61,7 @@ class TestReadPage:
         response = mocker.Mock()
         response.text = "content"
         response.cookies = {}
-        mocker.patch("oi_fetcher.web.requests.get", return_value=response)
+        mocker.patch("oi_downloader.web.requests.get", return_value=response)
 
         assert website._read_page("/") == "content"
         assert website.csrf_token == "old"
@@ -73,14 +73,14 @@ class TestReadPage:
         response = mocker.Mock()
         response.text = "content"
         response.cookies = {"csrftoken": "new"}
-        mocker.patch("oi_fetcher.web.requests.get", return_value=response)
+        mocker.patch("oi_downloader.web.requests.get", return_value=response)
 
         assert website._read_page("/") == "content"
         assert website.csrf_token == "new"
 
     def test_raises_on_request_error(self, mocker: MockerFixture) -> None:
         mocker.patch(
-            "oi_fetcher.web.requests.get",
+            "oi_downloader.web.requests.get",
             side_effect=requests.RequestException,
         )
 
@@ -99,7 +99,7 @@ class TestLogin:
     def test_missing_csrf_middleware_token(self, mocker: MockerFixture) -> None:
         home = mocker.Mock()
         home.text = "<html></html>"
-        mocker.patch("oi_fetcher.web.requests.get", return_value=home)
+        mocker.patch("oi_downloader.web.requests.get", return_value=home)
 
         with pytest.raises(MissingCsrfMiddlewareTokenError):
             Website().login("user", "pass")
@@ -110,12 +110,12 @@ class TestLogin:
         home = mocker.Mock()
         home.text = CSRF_FORM
         home.cookies = {}
-        mocker.patch("oi_fetcher.web.requests.get", return_value=home)
+        mocker.patch("oi_downloader.web.requests.get", return_value=home)
 
         response = mocker.Mock()
         response.status_code = 302
         response.cookies = {"sessionid": "sid", "csrftoken": "new"}
-        mocker.patch("oi_fetcher.web.requests.post", return_value=response)
+        mocker.patch("oi_downloader.web.requests.post", return_value=response)
 
         website = Website()
         website.login("user", "pass")
@@ -128,12 +128,12 @@ class TestLogin:
         home = mocker.Mock()
         home.text = CSRF_FORM
         home.cookies = {"csrftoken": "home-secret"}
-        mocker.patch("oi_fetcher.web.requests.get", return_value=home)
+        mocker.patch("oi_downloader.web.requests.get", return_value=home)
 
         response = mocker.Mock()
         response.status_code = 302
         response.cookies = {"sessionid": "sid", "csrftoken": "new"}
-        post = mocker.patch("oi_fetcher.web.requests.post", return_value=response)
+        post = mocker.patch("oi_downloader.web.requests.post", return_value=response)
 
         website = Website()
         website.login("user", "pass")
@@ -158,12 +158,12 @@ class TestLogin:
         home = mocker.Mock()
         home.text = CSRF_FORM
         home.cookies = {"csrftoken": "home-secret"}
-        mocker.patch("oi_fetcher.web.requests.get", return_value=home)
+        mocker.patch("oi_downloader.web.requests.get", return_value=home)
 
         response = mocker.Mock()
         response.status_code = 200
         response.cookies = {}
-        mocker.patch("oi_fetcher.web.requests.post", return_value=response)
+        mocker.patch("oi_downloader.web.requests.post", return_value=response)
 
         website = Website()
 
@@ -177,12 +177,12 @@ class TestLogin:
         home = mocker.Mock()
         home.text = CSRF_FORM
         home.cookies = {"csrftoken": "home-secret"}
-        mocker.patch("oi_fetcher.web.requests.get", return_value=home)
+        mocker.patch("oi_downloader.web.requests.get", return_value=home)
 
         response = mocker.Mock()
         response.status_code = 302
         response.cookies = {"sessionid": "sid"}
-        mocker.patch("oi_fetcher.web.requests.post", return_value=response)
+        mocker.patch("oi_downloader.web.requests.post", return_value=response)
 
         website = Website()
 

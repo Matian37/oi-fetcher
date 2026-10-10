@@ -5,7 +5,7 @@ from typing import Final
 
 import requests
 
-from oi_fetcher.exceptions import (
+from oi_downloader.exceptions import (
     AlreadyLoggedInError,
     LoginFailedError,
     MissingCsrfMiddlewareTokenError,

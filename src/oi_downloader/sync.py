@@ -5,8 +5,8 @@ from pathlib import Path
 from time import sleep
 from typing import Final
 
-from oi_fetcher.tasks import Task
-from oi_fetcher.web import Website
+from oi_downloader.tasks import Task
+from oi_downloader.web import Website
 
 UPDATE_COLLDOWN: Final[float] = 0.5
 SOLUTIONS_FOLDER: Final[str] = "rozwiazania"
