@@ -29,10 +29,9 @@ def load_expected_tasks(name: str) -> list[Task]:
 
 
 class TestScrapeTasks:
-    # TODO: add more testdata
     @pytest.mark.parametrize(
         "filename",
-        ["some-tasks-solved", "no-tasks-solved"],
+        ["no-tasks-solved", "some-tasks-solved", "normal-and-skippable-tasks"],
     )
     def test_scrape_tasks(self, mocker: MockerFixture, filename: str) -> None:
         wr = mocker.Mock()

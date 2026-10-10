@@ -20,7 +20,7 @@ SHORTNAME_PATTERN: Final[str] = (
     r'^\s*+<a\s++href="[^"]++">[\w\s]++\((?P<shortname>[^\)]++)\)\s*+</a>[^\S\n]*+$'
 )
 SCORE_PATTERN: Final[str] = (
-    r'^\s*+<a\s++class="[^"]++"\s++href="/s/(?P<submission_id>\d++)/">\s*+(?P<score>\d++)\s*+</a>[^\S\n]*+$'
+    r'^\s*+<a\s++class="[^"]++"\s++href="(?:https://szkopul\.edu\.pl)?/s/(?P<submission_id>\d++)/">\s*+(?P<score>\d++)\s*+</a>[^\S\n]*+$'
 )
 
 COMBINED_PATTERN: Final[re.Pattern] = re.compile(
