@@ -122,13 +122,10 @@ class Website:
         if not self.logged_in:
             raise NotLoggedInError()
 
-        home = self._read_page(HOME_PAGE)
-        csrf_middleware_token = self._extract_csrf_middleware_token(home)
-
         try:
             response = requests.post(
                 LOGOUT_PAGE,
-                data={"csrfmiddlewaretoken": csrf_middleware_token},
+                data={"csrfmiddlewaretoken": self.csrf_token},
                 cookies=self._cookies,
                 headers={"Referer": HOME_PAGE},
             )
