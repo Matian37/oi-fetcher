@@ -41,7 +41,6 @@ def make_task(
 
 
 class TestGenSubmissionRegex:
-    @pytest.mark.unit
     @pytest.mark.parametrize(
         "shortname",
         [
@@ -58,12 +57,10 @@ class TestGenSubmissionRegex:
         with pytest.raises(AssertionError):
             gen_submission_regex(make_task(shortname=shortname))
 
-    @pytest.mark.unit
     def test_valid_shortname(self) -> None:
         pattern = gen_submission_regex(make_task(shortname="abc"))
         assert re.match(pattern, "abc.cpp")
 
-    @pytest.mark.unit
     @pytest.mark.parametrize(
         ("filename", "expected_group"),
         [
@@ -78,7 +75,6 @@ class TestGenSubmissionRegex:
         assert match is not None
         assert match.group(1) == expected_group
 
-    @pytest.mark.unit
     @pytest.mark.parametrize(
         "filename",
         [
@@ -97,7 +93,6 @@ class TestGenSubmissionRegex:
 
 
 class TestGenSubmDirectory:
-    @pytest.mark.unit
     def test_returns_expected_path(self, tmp_path: Path) -> None:
         task = make_task(
             shortname="sho",
@@ -109,7 +104,6 @@ class TestGenSubmDirectory:
             tmp_path / "xxviii" / "etap1" / "probne" / "sho"
         )
 
-    @pytest.mark.unit
     def test_omits_missing_day(self, tmp_path: Path) -> None:
         task = make_task(
             shortname="sho",
@@ -121,7 +115,6 @@ class TestGenSubmDirectory:
 
 
 class TestGenSubmFilePath:
-    @pytest.mark.unit
     @pytest.mark.parametrize(
         ("score", "expected_name"),
         [(0, "sho0.cpp"), (42, "sho42.cpp"), (100, "sho.cpp")],
@@ -136,7 +129,6 @@ class TestGenSubmFilePath:
 
 
 class TestMatchTask:
-    @pytest.mark.unit
     @pytest.mark.parametrize(
         ("filename", "expected"),
         [
@@ -154,12 +146,10 @@ class TestMatchTask:
 
 
 class TestCleanupDirectory:
-    @pytest.mark.unit
     def test_empty_dir(self, tmp_path: Path) -> None:
         cleanup_directory(tmp_path)
         assert list(tmp_path.iterdir()) == []
 
-    @pytest.mark.unit
     def test_removes_files_and_nested_dirs(self, tmp_path: Path) -> None:
         (tmp_path / "a.cpp").write_text("a")
         (tmp_path / "b.txt").write_text("b")
@@ -172,7 +162,6 @@ class TestCleanupDirectory:
 
         assert list(tmp_path.iterdir()) == []
 
-    @pytest.mark.unit
     def test_keeps_file(self, tmp_path: Path) -> None:
         keep = tmp_path / "keep.cpp"
         keep.write_text("keep")
@@ -183,7 +172,6 @@ class TestCleanupDirectory:
         assert keep.read_text() == "keep"
         assert not (tmp_path / "remove.cpp").exists()
 
-    @pytest.mark.unit
     def test_removes_dir_with_kept_name(self, tmp_path: Path) -> None:
         # a directory sharing the kept file's name must still be removed
         same_name_dir = tmp_path / "keep.cpp"
@@ -196,11 +184,9 @@ class TestCleanupDirectory:
 
 
 class TestMaxLocalSubmission:
-    @pytest.mark.unit
     def test_no_tasks(self, tmp_path: Path) -> None:
         assert max_local_submission(make_task(shortname="x"), tmp_path) is None
 
-    @pytest.mark.unit
     def test_different_shortnames(self, tmp_path: Path) -> None:
         # two files with a different shortname from searched one
         (tmp_path / "y1.cpp").write_text("")
@@ -208,7 +194,6 @@ class TestMaxLocalSubmission:
 
         assert max_local_submission(make_task(shortname="x"), tmp_path) is None
 
-    @pytest.mark.unit
     def test_picks_matching_task(self, tmp_path: Path) -> None:
         (tmp_path / "x50.cpp").write_text("")
         (tmp_path / "y49.cpp").write_text("")
@@ -217,7 +202,6 @@ class TestMaxLocalSubmission:
 
         assert result == Submission(filename="y49.cpp", score=49)
 
-    @pytest.mark.unit
     def test_returns_best_score(self, mocker: MockerFixture) -> None:
         # mock the directory so that entry iteration order is deterministic
         # scores resolved from the names are 31, 100, no match and 11 respectively
@@ -240,7 +224,6 @@ class TestMaxLocalSubmission:
 
 
 class TestSaveSolution:
-    @pytest.mark.unit
     def test_creates_parent_folders(
         self, tmp_path: Path, mocker: MockerFixture
     ) -> None:
@@ -254,7 +237,6 @@ class TestSaveSolution:
         assert path.read_text() == "code"
         wr.read_submission_code.assert_called_once_with(7)
 
-    @pytest.mark.unit
     def test_parent_folders_exist(self, tmp_path: Path, mocker: MockerFixture) -> None:
         wr = mocker.Mock()
         wr.read_submission_code.return_value = "code"
@@ -267,7 +249,6 @@ class TestSaveSolution:
         assert path.read_text() == "code"
         wr.read_submission_code.assert_called_once_with(3)
 
-    @pytest.mark.unit
     def test_overwrites_existing_file(
         self, tmp_path: Path, mocker: MockerFixture
     ) -> None:
@@ -320,7 +301,6 @@ def _run_sync(
 
 
 class TestSyncRepo:
-    @pytest.mark.unit
     def test_creates_solutions_dir(self, tmp_path: Path, mocker: MockerFixture) -> None:
         run = _run_sync(mocker, tmp_path, [])
 
@@ -329,7 +309,6 @@ class TestSyncRepo:
         run.sleep.assert_not_called()
         assert run.printed == []
 
-    @pytest.mark.unit
     @pytest.mark.parametrize("day", [None, "d1"])
     def test_new_submission_to_new_task(
         self, tmp_path: Path, mocker: MockerFixture, day: str | None
@@ -344,7 +323,6 @@ class TestSyncRepo:
         run.sleep.assert_called_once()
         assert run.printed  # check that the notice was printed
 
-    @pytest.mark.unit
     def test_better_submission_to_old_task(
         self, tmp_path: Path, mocker: MockerFixture
     ) -> None:
@@ -366,7 +344,6 @@ class TestSyncRepo:
         run.sleep.assert_called_once()
         assert run.printed  # check that the notice was printed
 
-    @pytest.mark.unit
     @pytest.mark.parametrize(
         "local_name",
         [
@@ -395,7 +372,6 @@ class TestSyncRepo:
         run.sleep.assert_not_called()
         assert run.printed == []
 
-    @pytest.mark.unit
     def test_multiple_tasks(self, tmp_path: Path, mocker: MockerFixture) -> None:
         (tmp_path / "rozwiazania").mkdir()
         first = make_task(shortname="aaa", score=100, submission_id=1)

@@ -15,7 +15,6 @@ from oi_fetcher.parse import (
 
 
 class TestParseEdition:
-    @pytest.mark.unit
     @pytest.mark.parametrize(
         "value",
         ["", "abc", "5 ", "-1", "0", str(CHECKLIST_MAX_EDITION + 1)],
@@ -24,7 +23,6 @@ class TestParseEdition:
         with pytest.raises(AssertionError):
             _parse_edition(value)
 
-    @pytest.mark.unit
     @pytest.mark.parametrize(
         ("value", "expected"),
         [("1", "i"), ("28", "xxviii"), (str(CHECKLIST_MAX_EDITION), "xxxii")],
@@ -34,7 +32,6 @@ class TestParseEdition:
 
 
 class TestParseStage:
-    @pytest.mark.unit
     @pytest.mark.parametrize(
         "value",
         [
@@ -49,14 +46,12 @@ class TestParseStage:
         with pytest.raises(AssertionError):
             _parse_stage(value)
 
-    @pytest.mark.unit
     @pytest.mark.parametrize(("value", "expected"), CHECKLIST_STAGES.items())
     def test_parse_stage_valid(self, value: str, expected: str) -> None:
         assert _parse_stage(value) == expected
 
 
 class TestParseDay:
-    @pytest.mark.unit
     @pytest.mark.parametrize(
         "value",
         [
@@ -71,25 +66,21 @@ class TestParseDay:
         with pytest.raises(AssertionError):
             _parse_day(value)
 
-    @pytest.mark.unit
     @pytest.mark.parametrize(("value", "expected"), CHECKLIST_DAYS.items())
     def test_parse_day_valid(self, value: str, expected: str) -> None:
         assert _parse_day(value) == expected
 
 
 class TestParseShortname:
-    @pytest.mark.unit
     def test_parse_shortname_invalid(self) -> None:
         with pytest.raises(AssertionError):
             _parse_shortname("")
 
-    @pytest.mark.unit
     def test_parse_shortname_valid(self) -> None:
         assert _parse_shortname("foo") == "foo"
 
 
 class TestParseLocation:
-    @pytest.mark.unit
     @pytest.mark.parametrize(
         "location",
         [
@@ -104,7 +95,6 @@ class TestParseLocation:
     def test_parse_location_invalid(self, location: list[str]) -> None:
         assert parse_location(location) is None
 
-    @pytest.mark.unit
     @pytest.mark.parametrize(
         ("edition", "expected"),
         [
@@ -119,7 +109,6 @@ class TestParseLocation:
     ) -> None:
         assert parse_location([edition, "e1"]) == expected
 
-    @pytest.mark.unit
     @pytest.mark.parametrize(
         ("location", "expected"),
         [
@@ -138,7 +127,6 @@ class TestParseLocation:
     ) -> None:
         assert parse_location(location) == expected
 
-    @pytest.mark.unit
     @pytest.mark.parametrize(
         ("stage", "expected"),
         [

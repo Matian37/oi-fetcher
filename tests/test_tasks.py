@@ -30,7 +30,6 @@ def load_expected_tasks(name: str) -> list[Task]:
 
 class TestScrapeTasks:
     # TODO: add more testdata
-    @pytest.mark.unit
     @pytest.mark.parametrize(
         "filename",
         ["some-tasks-solved", "no-tasks-solved"],

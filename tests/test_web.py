@@ -17,7 +17,6 @@ CSRF_FORM = '<input type="hidden" name="csrfmiddlewaretoken" value="tok">'
 
 
 class TestCookies:
-    @pytest.mark.unit
     @pytest.mark.parametrize(
         ("session_id", "csrf_token", "expected"),
         [
@@ -38,7 +37,6 @@ class TestCookies:
 
 
 class TestReadPage:
-    @pytest.mark.unit
     def test_returns_content_and_updates_csrf(self, mocker: MockerFixture) -> None:
         website = Website()
         website.session_id = "sid"
@@ -56,7 +54,6 @@ class TestReadPage:
             cookies={"sessionid": "sid", "csrftoken": "old"},
         )
 
-    @pytest.mark.unit
     def test_raises_when_csrf_absent(self, mocker: MockerFixture) -> None:
         website = Website()
         website.csrf_token = "old"
@@ -71,7 +68,6 @@ class TestReadPage:
 
         assert website.csrf_token == "old"
 
-    @pytest.mark.unit
     def test_raises_on_request_error(self, mocker: MockerFixture) -> None:
         mocker.patch(
             "oi_fetcher.web.requests.get",
@@ -83,7 +79,6 @@ class TestReadPage:
 
 
 class TestLogin:
-    @pytest.mark.unit
     def test_already_logged_in(self) -> None:
         website = Website()
         website.logged_in = True
@@ -91,7 +86,6 @@ class TestLogin:
         with pytest.raises(AlreadyLoggedInError):
             website.login("user", "pass")
 
-    @pytest.mark.unit
     def test_missing_csrf_middleware_token(self, mocker: MockerFixture) -> None:
         home = mocker.Mock()
         home.text = "<html></html>"
@@ -100,7 +94,6 @@ class TestLogin:
         with pytest.raises(MissingCsrfMiddlewareTokenError):
             Website().login("user", "pass")
 
-    @pytest.mark.unit
     def test_missing_csrf_cookie(self, mocker: MockerFixture) -> None:
         home = mocker.Mock()
         home.text = CSRF_FORM
@@ -110,7 +103,6 @@ class TestLogin:
         with pytest.raises(MissingCsrfTokenError):
             Website().login("user", "pass")
 
-    @pytest.mark.unit
     def test_success(self, mocker: MockerFixture) -> None:
         home = mocker.Mock()
         home.text = CSRF_FORM
@@ -139,7 +131,6 @@ class TestLogin:
             headers={"Referer": "https://szkopul.edu.pl/"},
         )
 
-    @pytest.mark.unit
     def test_failure(self, mocker: MockerFixture) -> None:
         home = mocker.Mock()
         home.text = CSRF_FORM
@@ -158,7 +149,6 @@ class TestLogin:
         assert not website.logged_in
         assert website.session_id is None
 
-    @pytest.mark.unit
     def test_missing_csrf_in_response(self, mocker: MockerFixture) -> None:
         home = mocker.Mock()
         home.text = CSRF_FORM
@@ -179,19 +169,16 @@ class TestLogin:
 
 
 class TestPagesRequireLogin:
-    @pytest.mark.unit
     def test_tasks_requires_login(self) -> None:
         with pytest.raises(NotLoggedInError):
             Website().read_tasks_page()
 
-    @pytest.mark.unit
     def test_submission_code_requires_login(self) -> None:
         with pytest.raises(NotLoggedInError):
             Website().read_submission_code(1)
 
 
 class TestReadTasksPage:
-    @pytest.mark.unit
     def test_fetches_archive(self, mocker: MockerFixture) -> None:
         website = Website()
         website.logged_in = True
@@ -202,7 +189,6 @@ class TestReadTasksPage:
 
 
 class TestReadSubmissionCode:
-    @pytest.mark.unit
     @pytest.mark.parametrize(
         "pre_tag",
         [
@@ -223,7 +209,6 @@ class TestReadSubmissionCode:
         )
         read_page.assert_called_once_with("https://szkopul.edu.pl/s/42/source/")
 
-    @pytest.mark.unit
     @pytest.mark.parametrize(
         "html",
         [

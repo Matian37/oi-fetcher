@@ -7,7 +7,6 @@ from oi_fetcher import main
 from oi_fetcher.exceptions import LoginFailedError
 
 
-@pytest.mark.unit
 def test_run_login_prompt_success(mocker: MockerFixture) -> None:
     website = mocker.Mock()
     mocker.patch("builtins.input", lambda _: "user")
@@ -21,7 +20,6 @@ def test_run_login_prompt_success(mocker: MockerFixture) -> None:
     assert printed == []
 
 
-@pytest.mark.unit
 def test_run_login_prompt_failure(mocker: MockerFixture) -> None:
     website = mocker.Mock()
     website.login.side_effect = [LoginFailedError(), None]
@@ -65,22 +63,18 @@ def _run_repo_path_prompt(
         assert printed == []
 
 
-@pytest.mark.unit
 def test_run_repo_path_prompt_success(mocker: MockerFixture, tmp_path: Path) -> None:
     _run_repo_path_prompt(mocker, tmp_path)
 
 
-@pytest.mark.unit
 def test_run_repo_path_prompt_invalid(mocker: MockerFixture, tmp_path: Path) -> None:
     _run_repo_path_prompt(mocker, tmp_path, bad_path=Path("\x00"))
 
 
-@pytest.mark.unit
 def test_run_repo_path_prompt_missing(mocker: MockerFixture, tmp_path: Path) -> None:
     _run_repo_path_prompt(mocker, tmp_path, bad_path=tmp_path / "missing")
 
 
-@pytest.mark.unit
 def test_run_repo_path_prompt_file(mocker: MockerFixture, tmp_path: Path) -> None:
     file = tmp_path / "file"
     file.write_text("content")
