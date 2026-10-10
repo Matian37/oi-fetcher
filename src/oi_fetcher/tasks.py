@@ -79,6 +79,10 @@ def scrape_tasks(website: Website) -> list[Task]:
                     location=last_location,
                 )
             )
+
+            # there cannot be task with the same shortname in the same location,
+            # so we can reset it to prevent accidental reuse in case of malformed HTML
+            last_shortname = None
         else:
             raise NotImplementedError
 

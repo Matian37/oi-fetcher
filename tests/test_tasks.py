@@ -91,3 +91,25 @@ class TestScrapeTasks:
                 location=Location(edition="x", stage="etap2", day="probne"),
             )
         ]
+
+    def test_resets_shortname_after_task(self, mocker: MockerFixture) -> None:
+        # a submission without a preceding shortname must be ignored,
+        # so the same shortname is not accidentally reused
+        html = """
+        <div class="x" id="problems-problemgroups-10-e2-d0">
+        <a href="x">Foo (foo)</a>
+        <a class="x" href="/s/1/">50</a>
+        <a class="x" href="/s/2/">60</a>
+        """
+        website = mocker.Mock()
+        website.read_tasks_page.return_value = html
+
+        tasks = scrape_tasks(website)
+        assert tasks == [
+            Task(
+                submission_id=1,
+                shortname="foo",
+                score=50,
+                location=Location(edition="x", stage="etap2", day="probne"),
+            )
+        ]
