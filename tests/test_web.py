@@ -193,6 +193,53 @@ class TestLogin:
         assert website.session_id is None
 
 
+class TestLogout:
+    def test_requires_login(self) -> None:
+        with pytest.raises(NotLoggedInError):
+            Website().logout()
+
+    def test_success(self, mocker: MockerFixture) -> None:
+        website = Website(session_id="sid", csrf_token="tok")
+        website.logged_in = True
+
+        home = mocker.Mock()
+        home.text = CSRF_FORM
+        home.cookies = {"csrftoken": "tok"}
+        mocker.patch("oi_downloader.web.requests.get", return_value=home)
+
+        response = mocker.Mock()
+        response.raise_for_status = mocker.Mock()
+        post = mocker.patch("oi_downloader.web.requests.post", return_value=response)
+
+        website.logout()
+
+        assert not website.logged_in
+        assert website.session_id is None
+        assert website.csrf_token is None
+        post.assert_called_once_with(
+            "https://szkopul.edu.pl/logout/",
+            data={"csrfmiddlewaretoken": "tok"},
+            cookies={"sessionid": "sid", "csrftoken": "tok"},
+            headers={"Referer": "https://szkopul.edu.pl/"},
+        )
+
+    def test_raises_on_request_error(self, mocker: MockerFixture) -> None:
+        website = Website(session_id="sid", csrf_token="tok")
+        website.logged_in = True
+
+        home = mocker.Mock()
+        home.text = CSRF_FORM
+        home.cookies = {"csrftoken": "tok"}
+        mocker.patch("oi_downloader.web.requests.get", return_value=home)
+        mocker.patch(
+            "oi_downloader.web.requests.post",
+            side_effect=requests.RequestException,
+        )
+
+        with pytest.raises(WebsiteError):
+            website.logout()
+
+
 class TestPagesRequireLogin:
     def test_tasks_requires_login(self) -> None:
         with pytest.raises(NotLoggedInError):

@@ -2,7 +2,7 @@ import getpass
 import sys
 from pathlib import Path
 
-from oi_downloader.exceptions import LoginFailedError
+from oi_downloader.exceptions import LoginFailedError, WebsiteError
 from oi_downloader.sync import sync_repo
 from oi_downloader.tasks import scrape_tasks
 from oi_downloader.web import Website
@@ -43,11 +43,16 @@ def main():
     try:
         tasks = scrape_tasks(website)
     except AssertionError as e:
-        print(f"🚨 Error occurred (contact developer with full error log): {e}")
+        print(f"🚨 Error occurred, contact developer with full error log: {e}")
         sys.exit(1)
 
     repo_path = run_repo_path_prompt()
     sync_repo(website, tasks, repo_path)
+
+    try:
+        website.logout()
+    except WebsiteError:
+        print("🚨 Error occurred during logout, but continuing")
 
     print("✅ Everything is up to date.")
     sys.exit(0)

@@ -18,6 +18,7 @@ from oi_downloader.exceptions import (
 BASE_URL: Final[str] = "https://szkopul.edu.pl"
 HOME_PAGE: Final[str] = f"{BASE_URL}/"
 LOGIN_PAGE: Final[str] = f"{BASE_URL}/login/"
+LOGOUT_PAGE: Final[str] = f"{BASE_URL}/logout/"
 TASKS_PAGE: Final[str] = f"{BASE_URL}/task_archive/oi/"
 SUBMISSION_PAGE: Final[str] = f"{BASE_URL}/s/{{}}/source/"
 
@@ -66,19 +67,23 @@ class Website:
 
         return response.text
 
-    def login(self, login: str, password: str) -> None:
-        if self.logged_in:
-            raise AlreadyLoggedInError()
-
-        home = self._read_page(HOME_PAGE)
-
-        match = CSRF_PATTERN.search(home)
+    def _extract_csrf_middleware_token(self, page: str) -> str:
+        match = CSRF_PATTERN.search(page)
         if match is None:
             raise MissingCsrfMiddlewareTokenError()
 
         csrf_middleware_token = match.group("csrfmiddlewaretoken")
         if not csrf_middleware_token:
             raise MissingCsrfMiddlewareTokenError()
+
+        return csrf_middleware_token
+
+    def login(self, login: str, password: str) -> None:
+        if self.logged_in:
+            raise AlreadyLoggedInError()
+
+        home = self._read_page(HOME_PAGE)
+        csrf_middleware_token = self._extract_csrf_middleware_token(home)
 
         try:
             response = requests.post(
@@ -112,6 +117,28 @@ class Website:
         self.session_id = session_id
         self.csrf_token = new_csrf_token
         self.logged_in = True
+
+    def logout(self) -> None:
+        if not self.logged_in:
+            raise NotLoggedInError()
+
+        home = self._read_page(HOME_PAGE)
+        csrf_middleware_token = self._extract_csrf_middleware_token(home)
+
+        try:
+            response = requests.post(
+                LOGOUT_PAGE,
+                data={"csrfmiddlewaretoken": csrf_middleware_token},
+                cookies=self._cookies,
+                headers={"Referer": HOME_PAGE},
+            )
+            response.raise_for_status()
+        except requests.RequestException as e:
+            raise WebsiteError() from e
+
+        self.session_id = None
+        self.csrf_token = None
+        self.logged_in = False
 
     def read_tasks_page(self) -> str:
         if not self.logged_in:
