@@ -1,5 +1,7 @@
 # OI-Fetcher
 
+![Version](https://img.shields.io/badge/version-0.1.0-blue)
+
 Program pozwalający na ściąganie swoich rozwiązań z platformy **Szkopuł** dla [checklisty OI](https://github.com/testowyuczen/oi).
 
 ---
