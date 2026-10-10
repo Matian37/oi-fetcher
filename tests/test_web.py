@@ -13,7 +13,7 @@ from oi_downloader.exceptions import (
 )
 from oi_downloader.web import Website
 
-CSRF_FORM = '<input type="hidden" name="csrfmiddlewaretoken" value="tok">'
+CSRF_FORM = '<input type="hidden" name="csrfmiddlewaretoken" value="mid">'
 
 
 class TestCookies:
@@ -104,9 +104,7 @@ class TestLogin:
         with pytest.raises(MissingCsrfMiddlewareTokenError):
             Website().login("user", "pass")
 
-    def test_succeeds_without_csrf_cookie_from_home(
-        self, mocker: MockerFixture
-    ) -> None:
+    def test_succeeds_without_csrf_cookie(self, mocker: MockerFixture) -> None:
         home = mocker.Mock()
         home.text = CSRF_FORM
         home.cookies = {}
@@ -144,7 +142,7 @@ class TestLogin:
         post.assert_called_once_with(
             "https://szkopul.edu.pl/login/",
             data={
-                "csrfmiddlewaretoken": "tok",
+                "csrfmiddlewaretoken": "mid",
                 "login_view-current_step": "auth",
                 "auth-username": "user",
                 "auth-password": "pass",
@@ -218,7 +216,7 @@ class TestLogout:
         assert website.csrf_token is None
         post.assert_called_once_with(
             "https://szkopul.edu.pl/logout/",
-            data={"csrfmiddlewaretoken": "tok"},
+            data={"csrfmiddlewaretoken": "mid"},
             cookies={"sessionid": "sid", "csrftoken": "tok"},
             headers={"Referer": "https://szkopul.edu.pl/"},
         )
