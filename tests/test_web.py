@@ -54,7 +54,7 @@ class TestReadPage:
             cookies={"sessionid": "sid", "csrftoken": "old"},
         )
 
-    def test_raises_when_csrf_absent(self, mocker: MockerFixture) -> None:
+    def test_keeps_csrf_when_absent(self, mocker: MockerFixture) -> None:
         website = Website()
         website.csrf_token = "old"
 
@@ -63,10 +63,20 @@ class TestReadPage:
         response.cookies = {}
         mocker.patch("oi_fetcher.web.requests.get", return_value=response)
 
-        with pytest.raises(MissingCsrfTokenError):
-            website._read_page("/")
-
+        assert website._read_page("/") == "content"
         assert website.csrf_token == "old"
+
+    def test_sets_csrf_when_provided(self, mocker: MockerFixture) -> None:
+        website = Website()
+        website.csrf_token = "old"
+
+        response = mocker.Mock()
+        response.text = "content"
+        response.cookies = {"csrftoken": "new"}
+        mocker.patch("oi_fetcher.web.requests.get", return_value=response)
+
+        assert website._read_page("/") == "content"
+        assert website.csrf_token == "new"
 
     def test_raises_on_request_error(self, mocker: MockerFixture) -> None:
         mocker.patch(
@@ -94,14 +104,25 @@ class TestLogin:
         with pytest.raises(MissingCsrfMiddlewareTokenError):
             Website().login("user", "pass")
 
-    def test_missing_csrf_cookie(self, mocker: MockerFixture) -> None:
+    def test_succeeds_without_csrf_cookie_from_home(
+        self, mocker: MockerFixture
+    ) -> None:
         home = mocker.Mock()
         home.text = CSRF_FORM
         home.cookies = {}
         mocker.patch("oi_fetcher.web.requests.get", return_value=home)
 
-        with pytest.raises(MissingCsrfTokenError):
-            Website().login("user", "pass")
+        response = mocker.Mock()
+        response.status_code = 302
+        response.cookies = {"sessionid": "sid", "csrftoken": "new"}
+        mocker.patch("oi_fetcher.web.requests.post", return_value=response)
+
+        website = Website()
+        website.login("user", "pass")
+
+        assert website.logged_in
+        assert website.session_id == "sid"
+        assert website.csrf_token == "new"
 
     def test_success(self, mocker: MockerFixture) -> None:
         home = mocker.Mock()

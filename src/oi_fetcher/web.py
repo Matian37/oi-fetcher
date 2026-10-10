@@ -61,9 +61,8 @@ class Website:
             raise WebsiteError() from e
 
         csrf_token = response.cookies.get("csrftoken")
-        if csrf_token is None:
-            raise MissingCsrfTokenError()
-        self.csrf_token = csrf_token
+        if csrf_token:
+            self.csrf_token = csrf_token
 
         return response.text
 
