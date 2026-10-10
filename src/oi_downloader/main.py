@@ -34,17 +34,13 @@ def run_repo_path_prompt() -> Path:
     return repo_path
 
 
-def main():
+def run():
     print("🚀 Starting downloader...")
 
     website = Website()
     run_login_prompt(website)
 
-    try:
-        tasks = scrape_tasks(website)
-    except AssertionError as e:
-        print(f"🚨 Error occurred, contact developer with full error log: {e}")
-        sys.exit(1)
+    tasks = scrape_tasks(website)
 
     repo_path = run_repo_path_prompt()
     sync_repo(website, tasks, repo_path)
@@ -55,6 +51,16 @@ def main():
         print("🚨 Error occurred during logout, but continuing")
 
     print("✅ Everything is up to date.")
+
+
+def main():
+    try:
+        run()
+    except KeyboardInterrupt:
+        sys.exit(1)
+    except AssertionError as e:
+        print(f"🚨 Error occurred, contact developer with full error log: {e}")
+        sys.exit(1)
     sys.exit(0)
 
 
