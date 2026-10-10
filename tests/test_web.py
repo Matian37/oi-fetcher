@@ -208,11 +208,6 @@ class TestLogout:
         website = Website(session_id="sid", csrf_token="tok")
         website.logged_in = True
 
-        home = mocker.Mock()
-        home.text = CSRF_FORM
-        home.cookies = {"csrftoken": "tok"}
-        mocker.patch("oi_downloader.web.requests.get", return_value=home)
-
         response = mocker.Mock()
         response.raise_for_status = mocker.Mock()
         post = mocker.patch("oi_downloader.web.requests.post", return_value=response)
@@ -224,7 +219,7 @@ class TestLogout:
         assert website.csrf_token is None
         post.assert_called_once_with(
             "https://szkopul.edu.pl/logout/",
-            data={"csrfmiddlewaretoken": "mid"},
+            data={"csrfmiddlewaretoken": "tok"},
             cookies={"sessionid": "sid", "csrftoken": "tok"},
             headers={"Referer": "https://szkopul.edu.pl/"},
         )
@@ -233,10 +228,6 @@ class TestLogout:
         website = Website(session_id="sid", csrf_token="tok")
         website.logged_in = True
 
-        home = mocker.Mock()
-        home.text = CSRF_FORM
-        home.cookies = {"csrftoken": "tok"}
-        mocker.patch("oi_downloader.web.requests.get", return_value=home)
         mocker.patch(
             "oi_downloader.web.requests.post",
             side_effect=requests.RequestException,
@@ -364,7 +355,6 @@ class TestWebsiteWorkflow:
                 SUBMISSION_PAGE.format(SUBM_ID),
                 {"sessionid": "sid", "csrftoken": "csrf-auth"},
             ),
-            (HOME_PAGE, {"sessionid": "sid", "csrftoken": "csrf-auth"}),
         ]
 
         assert post_calls == [
@@ -382,8 +372,8 @@ class TestWebsiteWorkflow:
             },
             {
                 "url": LOGOUT_PAGE,
-                "data": {"csrfmiddlewaretoken": "mid"},
-                "cookies": {"sessionid": "sid", "csrftoken": "csrf-home"},
+                "data": {"csrfmiddlewaretoken": "csrf-auth"},
+                "cookies": {"sessionid": "sid", "csrftoken": "csrf-auth"},
                 "headers": {"Referer": HOME_PAGE},
             },
         ]

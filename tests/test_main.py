@@ -155,8 +155,6 @@ class TestRun:
                 # submission pages
                 make_response(f'<pre id="raw_source">{self.SUBMISSION_101}</pre>'),
                 make_response(f'<pre id="raw_source">{self.SUBMISSION_202}</pre>'),
-                # homepage
-                make_response(self.CSRF_FORM, cookies={"csrftoken": "csrf-home"}),
             ],
             post_responses=[
                 # successful login
@@ -192,7 +190,6 @@ class TestRun:
                 SUBMISSION_PAGE.format(202),
                 cookies={"sessionid": "sid", "csrftoken": "csrf-auth"},
             ),
-            call(HOME_PAGE, cookies={"sessionid": "sid", "csrftoken": "csrf-auth"}),
         ]
 
         assert post.call_args_list == [
@@ -210,8 +207,8 @@ class TestRun:
             ),
             call(
                 LOGOUT_PAGE,
-                data={"csrfmiddlewaretoken": "mid"},
-                cookies={"sessionid": "sid", "csrftoken": "csrf-home"},
+                data={"csrfmiddlewaretoken": "csrf-auth"},
+                cookies={"sessionid": "sid", "csrftoken": "csrf-auth"},
                 headers={"Referer": HOME_PAGE},
             ),
         ]
@@ -242,17 +239,14 @@ class TestRun:
     def test_logout_error_is_ignored(
         self, mocker: MockerFixture, tmp_path: Path
     ) -> None:
-        home = make_response(self.CSRF_FORM, cookies={"csrftoken": "csrf-home"})
-
         _, _, printed = self._run_app(
             mocker,
             repo_path=tmp_path,
             get_responses=[
-                home,
+                make_response(self.CSRF_FORM, cookies={"csrftoken": "csrf-home"}),
                 make_response(self.TASKS_HTML),
                 make_response(f'<pre id="raw_source">{self.SUBMISSION_101}</pre>'),
                 make_response(f'<pre id="raw_source">{self.SUBMISSION_202}</pre>'),
-                home,
             ],
             post_responses=[
                 make_response(
