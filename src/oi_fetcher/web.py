@@ -92,10 +92,15 @@ class Website:
                 },
                 cookies=self._cookies,
                 headers={"Referer": HOME_PAGE},
+                allow_redirects=False,
             )
             response.raise_for_status()
         except requests.RequestException as e:
             raise WebsiteError() from e
+
+        # Szkopuł returns 200 on failed login and 302 on successful login
+        if response.status_code != 302:
+            raise LoginFailedError()
 
         session_id = response.cookies.get("sessionid")
         if session_id is None:

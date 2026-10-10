@@ -110,6 +110,7 @@ class TestLogin:
         mocker.patch("oi_fetcher.web.requests.get", return_value=home)
 
         response = mocker.Mock()
+        response.status_code = 302
         response.cookies = {"sessionid": "sid", "csrftoken": "new"}
         post = mocker.patch("oi_fetcher.web.requests.post", return_value=response)
 
@@ -129,6 +130,7 @@ class TestLogin:
             },
             cookies={"csrftoken": "home-secret"},
             headers={"Referer": "https://szkopul.edu.pl/"},
+            allow_redirects=False,
         )
 
     def test_failure(self, mocker: MockerFixture) -> None:
@@ -138,6 +140,7 @@ class TestLogin:
         mocker.patch("oi_fetcher.web.requests.get", return_value=home)
 
         response = mocker.Mock()
+        response.status_code = 200
         response.cookies = {}
         mocker.patch("oi_fetcher.web.requests.post", return_value=response)
 
@@ -156,6 +159,7 @@ class TestLogin:
         mocker.patch("oi_fetcher.web.requests.get", return_value=home)
 
         response = mocker.Mock()
+        response.status_code = 302
         response.cookies = {"sessionid": "sid"}
         mocker.patch("oi_fetcher.web.requests.post", return_value=response)
 
