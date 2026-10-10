@@ -35,7 +35,7 @@ def run_repo_path_prompt() -> Path:
 
 
 def main():
-    print("🚀 Starting the fetcher...")
+    print("🚀 Starting downloader...")
 
     website = Website()
     run_login_prompt(website)

@@ -1,7 +1,7 @@
 import pytest
 import roman
 
-from oi_fetcher.parse import (
+from oi_downloader.parse import (
     CHECKLIST_DAYS,
     CHECKLIST_MAX_EDITION,
     CHECKLIST_STAGES,

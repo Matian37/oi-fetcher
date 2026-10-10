@@ -1,4 +1,4 @@
-from oi_fetcher.exceptions import WebsiteError
+from oi_downloader.exceptions import WebsiteError
 
 
 def test_default_message() -> None:

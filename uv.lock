@@ -154,7 +154,7 @@ wheels = [
 ]
 
 [[package]]
-name = "oi-fetcher"
+name = "oi-downloader"
 version = "0.0.0"
 source = { editable = "." }
 dependencies = [

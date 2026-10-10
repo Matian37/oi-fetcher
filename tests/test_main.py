@@ -2,8 +2,8 @@ from pathlib import Path
 
 from pytest_mock import MockerFixture
 
-from oi_fetcher import main
-from oi_fetcher.exceptions import LoginFailedError
+from oi_downloader import main
+from oi_downloader.exceptions import LoginFailedError
 
 
 def test_run_login_prompt_success(mocker: MockerFixture) -> None:
