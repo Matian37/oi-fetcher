@@ -9,6 +9,7 @@ from oi_fetcher.tasks import Task
 from oi_fetcher.web import Website
 
 UPDATE_COLLDOWN: Final[float] = 0.5
+SOLUTIONS_FOLDER: Final[str] = "rozwiazania"
 
 
 def _gen_submission_regex(task: Task) -> str:
@@ -21,7 +22,12 @@ def _gen_submission_regex(task: Task) -> str:
 
 
 def _gen_subm_directory(repo_path: Path, task: Task) -> Path:
-    path: list[str] = [str(repo_path), task.location.edition, task.location.stage]
+    path: list[str] = [
+        str(repo_path),
+        SOLUTIONS_FOLDER,
+        task.location.edition,
+        task.location.stage,
+    ]
 
     if task.location.day is not None:
         path.append(task.location.day)
@@ -101,7 +107,7 @@ def _save_solution(task: Task, repo_path: Path, website: Website) -> Path:
 
 
 def sync_repo(website: Website, tasks: list[Task], repo_path: Path) -> None:
-    solutions_dir = Path(repo_path, "rozwiazania")
+    solutions_dir = Path(repo_path, SOLUTIONS_FOLDER)
     solutions_dir.mkdir(exist_ok=True)
 
     for task in tasks:

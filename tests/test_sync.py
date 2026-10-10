@@ -7,6 +7,7 @@ from pytest_mock import MockerFixture, MockType
 
 from oi_fetcher.parse import Location
 from oi_fetcher.sync import (
+    SOLUTIONS_FOLDER,
     Submission,
     _cleanup_directory,
     _gen_subm_directory,
@@ -101,7 +102,7 @@ class TestGenSubmDirectory:
             day="probne",
         )
         assert _gen_subm_directory(tmp_path, task) == (
-            tmp_path / "xxviii" / "etap1" / "probne" / "sho"
+            tmp_path / SOLUTIONS_FOLDER / "xxviii" / "etap1" / "probne" / "sho"
         )
 
     def test_omits_missing_day(self, tmp_path: Path) -> None:
@@ -111,7 +112,10 @@ class TestGenSubmDirectory:
             stage="etap1",
             day=None,
         )
-        assert _gen_subm_directory(tmp_path, task) == tmp_path / "xxx" / "etap1" / "sho"
+        assert (
+            _gen_subm_directory(tmp_path, task)
+            == tmp_path / SOLUTIONS_FOLDER / "xxx" / "etap1" / "sho"
+        )
 
 
 class TestGenSubmFilePath:
@@ -304,7 +308,7 @@ class TestSyncRepo:
     def test_creates_solutions_dir(self, tmp_path: Path, mocker: MockerFixture) -> None:
         run = _run_sync(mocker, tmp_path, [])
 
-        assert (tmp_path / "rozwiazania").is_dir()
+        assert (tmp_path / SOLUTIONS_FOLDER).is_dir()
         run.read_submission_code.assert_not_called()
         run.sleep.assert_not_called()
         assert run.printed == []
@@ -313,7 +317,7 @@ class TestSyncRepo:
     def test_new_submission_to_new_task(
         self, tmp_path: Path, mocker: MockerFixture, day: str | None
     ) -> None:
-        (tmp_path / "rozwiazania").mkdir()
+        (tmp_path / SOLUTIONS_FOLDER).mkdir()
         task = make_task(shortname="sho", score=100, submission_id=3, day=day)
 
         run = _run_sync(mocker, tmp_path, [task])
@@ -326,7 +330,7 @@ class TestSyncRepo:
     def test_better_submission_to_old_task(
         self, tmp_path: Path, mocker: MockerFixture
     ) -> None:
-        (tmp_path / "rozwiazania").mkdir()
+        (tmp_path / SOLUTIONS_FOLDER).mkdir()
         task = make_task(shortname="sho", score=100)
         task_dir = _gen_subm_directory(tmp_path, task)
         task_dir.mkdir(parents=True)
@@ -357,7 +361,7 @@ class TestSyncRepo:
         mocker: MockerFixture,
         local_name: str,
     ) -> None:
-        (tmp_path / "rozwiazania").mkdir()
+        (tmp_path / SOLUTIONS_FOLDER).mkdir()
         task = make_task(shortname="sho", score=99)
         task_dir = _gen_subm_directory(tmp_path, task)
         task_dir.mkdir(parents=True)
@@ -373,7 +377,7 @@ class TestSyncRepo:
         assert run.printed == []
 
     def test_multiple_tasks(self, tmp_path: Path, mocker: MockerFixture) -> None:
-        (tmp_path / "rozwiazania").mkdir()
+        (tmp_path / SOLUTIONS_FOLDER).mkdir()
         first = make_task(shortname="aaa", score=100, submission_id=1)
         second = make_task(shortname="bbb", score=50, submission_id=2)
 
