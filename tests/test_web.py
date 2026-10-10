@@ -1,5 +1,6 @@
 import pytest
 import requests
+from helpers import make_response
 from pytest_mock import MockerFixture
 
 from oi_downloader.exceptions import (
@@ -19,7 +20,6 @@ from oi_downloader.web import (
     TASKS_PAGE,
     Website,
 )
-from tests.helpers import make_response
 
 CSRF_FORM = '<input type="hidden" name="csrfmiddlewaretoken" value="mid">'
 

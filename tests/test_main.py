@@ -3,6 +3,7 @@ from unittest.mock import call
 
 import pytest
 import requests
+from helpers import make_response
 from pytest_mock import MockerFixture, MockType
 
 from oi_downloader import main
@@ -15,7 +16,6 @@ from oi_downloader.web import (
     SUBMISSION_PAGE,
     TASKS_PAGE,
 )
-from tests.helpers import make_response
 
 
 def test_run_login_prompt_success(mocker: MockerFixture) -> None:
