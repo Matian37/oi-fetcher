@@ -47,3 +47,47 @@ class TestScrapeTasks:
         expected_tasks = sorted(expected_tasks, key=lambda t: t.submission_id)
 
         assert tasks == expected_tasks
+
+    @pytest.mark.parametrize(
+        "parser_name",
+        # all parsers except parse_location must not suppress errors
+        ["parse_shortname", "parse_submission_id", "parse_score"],
+    )
+    def test_propagates_parse_assertion(
+        self, mocker: MockerFixture, parser_name: str
+    ) -> None:
+        mocker.patch(f"oi_fetcher.tasks.{parser_name}", side_effect=AssertionError)
+        html = """
+        <div class="x" id="problems-problemgroups-10-e2-d0">
+        <a href="x">Foo (foo)</a>
+        <a class="x" href="/s/1/">50</a>
+        """
+        website = mocker.Mock()
+        website.read_tasks_page.return_value = html
+
+        with pytest.raises(AssertionError):
+            scrape_tasks(website)
+
+    def test_skips_unsupported_location(self, mocker: MockerFixture) -> None:
+        # edition 9999 is newer than the checklist supports, so its tasks is skipped
+        # but second task is supported and should be returned
+        html = """
+        <div class="x" id="problems-problemgroups-9999-e2-d0">
+        <a href="x">Foo (foo)</a>
+        <a class="x" href="/s/1/">100</a>
+        <div class="x" id="problems-problemgroups-10-e2-d0">
+        <a href="x">Bar (bar)</a>
+        <a class="x" href="/s/2/">50</a>
+        """
+        website = mocker.Mock()
+        website.read_tasks_page.return_value = html
+
+        tasks = scrape_tasks(website)
+        assert tasks == [
+            Task(
+                submission_id=2,
+                shortname="bar",
+                score=50,
+                location=Location(edition="x", stage="etap2", day="probne"),
+            )
+        ]

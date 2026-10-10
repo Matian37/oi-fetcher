@@ -49,20 +49,30 @@ def _parse_day(value: str) -> str:
     return CHECKLIST_DAYS[value]
 
 
-def _parse_shortname(value: str) -> str:
+def parse_shortname(value: str) -> str:
     assert value
     return value
 
 
-def parse_location(location: list[str]) -> Location | None:
-    if len(location) < 2 or len(location) != (2 if location[1] == "e1" else 3):
-        return None
+def parse_location(location: list[str]) -> Location:
+    assert len(location) >= 2
+    assert len(location) == (2 if location[1] == "e1" else 3)
 
-    try:
-        return Location(
-            edition=_parse_edition(location[0]),
-            stage=_parse_stage(location[1]),
-            day=_parse_day(location[2]) if len(location) == 3 else None,
-        )
-    except AssertionError:
-        return None
+    return Location(
+        edition=_parse_edition(location[0]),
+        stage=_parse_stage(location[1]),
+        day=_parse_day(location[2]) if len(location) == 3 else None,
+    )
+
+
+def parse_score(value: str) -> int:
+    assert value.isdigit()
+    score = int(value)
+    assert 0 <= score <= 100
+    return score
+
+
+def parse_submission_id(value: str) -> int:
+    assert value.isdigit()
+    submission_id = int(value)
+    return submission_id

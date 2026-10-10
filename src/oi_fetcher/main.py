@@ -1,4 +1,5 @@
 import getpass
+import sys
 from pathlib import Path
 
 from oi_fetcher.exceptions import LoginFailedError
@@ -38,11 +39,18 @@ def main():
 
     website = Website()
     run_login_prompt(website)
-    tasks = scrape_tasks(website)
+
+    try:
+        tasks = scrape_tasks(website)
+    except AssertionError as e:
+        print(f"🚨 Error occurred (contact developer with full error log): {e}")
+        sys.exit(1)
+
     repo_path = run_repo_path_prompt()
     sync_repo(website, tasks, repo_path)
 
     print("✅ Everything is up to date.")
+    sys.exit(0)
 
 
 if __name__ == "__main__":

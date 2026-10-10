@@ -2,7 +2,13 @@ import re
 from dataclasses import dataclass
 from typing import Final
 
-from oi_fetcher.parse import Location, parse_location
+from oi_fetcher.parse import (
+    Location,
+    parse_location,
+    parse_score,
+    parse_shortname,
+    parse_submission_id,
+)
 from oi_fetcher.web import Website
 
 LOCATION_PATTERN: Final[str] = (
@@ -14,7 +20,7 @@ SHORTNAME_PATTERN: Final[str] = (
     r'^\s*+<a\s++href="[^"]++">[\w\s]++\((?P<shortname>[^\)]++)\)\s*+</a>[^\S\n]*+$'
 )
 SCORE_PATTERN: Final[str] = (
-    r'^\s*+<a\s++class="[^"]++"\s++href="/s/(?P<submission>\d++)/">\s*+(?P<score>\d++)\s*+</a>[^\S\n]*+$'
+    r'^\s*+<a\s++class="[^"]++"\s++href="/s/(?P<submission_id>\d++)/">\s*+(?P<score>\d++)\s*+</a>[^\S\n]*+$'
 )
 
 COMBINED_PATTERN: Final[re.Pattern] = re.compile(
@@ -32,6 +38,11 @@ class Task:
 
 
 def scrape_tasks(website: Website) -> list[Task]:
+    """
+    Scrapes the tasks from Szkopuł website and returns a list of Task objects.
+
+    Raises: AssertionError if the HTML structure is not as expected.
+    """
     html = website.read_tasks_page()
 
     tasks: list[Task] = []
@@ -40,25 +51,31 @@ def scrape_tasks(website: Website) -> list[Task]:
     last_shortname: str | None = None
 
     for match in COMBINED_PATTERN.finditer(html):
-        location_group = match.group("location1") or match.group("location2")
+        unsafe_location = match.group("location1") or match.group("location2")
+        unsafe_shortname = match.group("shortname")
+        unsafe_submission_id = match.group("submission_id")
 
-        # TODO: parse shortname and submission params for safety
-        if location_group:
-            last_location = parse_location(location_group.split("-"))
-        elif match.group("shortname"):
-            last_shortname = match.group("shortname")
-        elif match.group("submission"):
-            subm_id = match.group("submission")
-            score = match.group("score")
+        if unsafe_location:
+            try:
+                last_location = parse_location(unsafe_location.split("-"))
+            except AssertionError:
+                # skips unsupported locations
+                # e.g. stages newer than supported by the checklist
+                last_location = None
+        elif unsafe_shortname:
+            last_shortname = parse_shortname(unsafe_shortname)
+        elif unsafe_submission_id:
+            submission_id = parse_submission_id(unsafe_submission_id)
+            score = parse_score(match.group("score"))
 
             if last_location is None or last_shortname is None:
                 continue
 
             tasks.append(
                 Task(
-                    submission_id=int(subm_id),
+                    submission_id=submission_id,
                     shortname=last_shortname,
-                    score=int(score),
+                    score=score,
                     location=last_location,
                 )
             )
