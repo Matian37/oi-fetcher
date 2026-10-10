@@ -16,3 +16,9 @@ This means that:
 
 Tool **does not download all solutions** from the website.
 Solution is only downloaded when it has better score than the one already present in the checklist.
+
+## Migrations
+
+If you used the tool before version `0.2.0`, you should rebuild your checklist. Keep in mind that your older solutions will be removed, only the latest one will be kept. 
+
+To rebuild checklist, remove the old checklist folder, then run updated tool again.
