@@ -1,5 +1,5 @@
 [project]
-name = "oi-fetcher"
+name = "oi-dowloader"
 version = "0.0.0"
 description = "Tool for downloading your own solutions from the Szkopuł platform for the OI checklist."
 readme = "README.md"
@@ -13,7 +13,7 @@ dependencies = [
 ]
 
 [project.scripts]
-oi-fetcher = "oi_fetcher.main:main"
+oi-fetcher = "oi_downloader.main:main"
 
 [build-system]
 requires = ["uv_build>=0.12.10,<0.13.0"]

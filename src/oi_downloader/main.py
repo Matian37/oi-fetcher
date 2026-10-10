@@ -2,10 +2,10 @@ import getpass
 import sys
 from pathlib import Path
 
-from oi_fetcher.exceptions import LoginFailedError
-from oi_fetcher.sync import sync_repo
-from oi_fetcher.tasks import scrape_tasks
-from oi_fetcher.web import Website
+from oi_downloader.exceptions import LoginFailedError
+from oi_downloader.sync import sync_repo
+from oi_downloader.tasks import scrape_tasks
+from oi_downloader.web import Website
 
 
 def run_login_prompt(website: Website) -> None:
