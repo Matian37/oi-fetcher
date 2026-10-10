@@ -11,7 +11,7 @@ TESTDATA_DIR = Path(__file__).parent / "testdata"
 
 
 def load_expected_tasks(name: str) -> list[Task]:
-    raw = json.loads((TESTDATA_DIR / f"{name}.out").read_text(encoding="utf-8"))
+    raw = json.loads((TESTDATA_DIR / f"{name}.json").read_text(encoding="utf-8"))
 
     return [
         Task(
