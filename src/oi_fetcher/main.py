@@ -9,32 +9,32 @@ from oi_fetcher.web import Website
 
 def run_login_prompt(website: Website) -> None:
     while True:
-        login = input("Podaj nazwe uzytkownika na szkopule:\n")
-        password = getpass.getpass("Podaj haslo (wpisywanie niewidoczne):\n")
+        login = input("Enter your Szkopuł username:\n")
+        password = getpass.getpass("Enter your password (input hidden):\n")
 
         try:
             website.login(login, password)
             break
         except LoginFailedError:
-            print("⛔ Logowanie nie powiodlo sie...")
+            print("⛔ Login failed...")
 
 
 def run_repo_path_prompt() -> Path:
     while True:
         repo_path = Path(
-            input("Podaj folder oi zawierajacy checkliste i rozwiazania:\n")
+            input("Enter repo folder containing the checklist and solutions:\n")
         )
 
         if repo_path.is_dir():
             break
         else:
-            print("⛔ Niepoprawna lub nieistniejaca sciezka do folderu.")
+            print("⛔ Invalid or non-existent folder path.")
 
     return repo_path
 
 
 def main():
-    print("🚀 Uruchamianie fetchera...")
+    print("🚀 Starting the fetcher...")
 
     website = Website()
     run_login_prompt(website)
@@ -42,7 +42,7 @@ def main():
     repo_path = run_repo_path_prompt()
     sync_repo(website, tasks, repo_path)
 
-    print("✅ Wszystko jest juz aktualne.")
+    print("✅ Everything is up to date.")
 
 
 if __name__ == "__main__":
