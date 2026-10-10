@@ -6,7 +6,7 @@ It is required to provide **login** and **password** for tool to authenticate wi
 
 ## How It Works
 
-Application runs headless browser and scrapes solutions from the [Szkopuł](https://szkopul.edu.pl/) website. 
+Application scrapes solutions from the [Szkopuł](https://szkopul.edu.pl/) website. 
 After that it saves them in the checklist folder. 
 
 To avoid making a huge number of requests, scores are retrieved from a single page (Szkopuł's OI Task Archive).

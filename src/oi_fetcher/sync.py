@@ -6,7 +6,7 @@ from time import sleep
 from typing import Final
 
 from oi_fetcher.tasks import Task
-from oi_fetcher.web import WebsiteRunner
+from oi_fetcher.web import Website
 
 UPDATE_COLLDOWN: Final[float] = 0.5
 
@@ -86,7 +86,7 @@ def max_local_submission(task: Task, task_dir: Path) -> Submission | None:
     return Submission(filename=best_subm[1], score=best_subm[0])
 
 
-def save_solution(task: Task, repo_path: Path, wr: WebsiteRunner) -> Path:
+def save_solution(task: Task, repo_path: Path, website: Website) -> Path:
     """
     Fetches the solution for the given task and saves it to the task directory.
     Returns the path to the saved file.
@@ -95,12 +95,12 @@ def save_solution(task: Task, repo_path: Path, wr: WebsiteRunner) -> Path:
     subm_file_path.parent.mkdir(parents=True, exist_ok=True)
 
     with subm_file_path.open("w", encoding="utf-8") as f:
-        f.write(wr.read_submission(task.submission_id))
+        f.write(website.read_submission_code(task.submission_id))
 
     return subm_file_path
 
 
-def sync_repo(wr: WebsiteRunner, tasks: list[Task], repo_path: Path) -> None:
+def sync_repo(website: Website, tasks: list[Task], repo_path: Path) -> None:
     solutions_dir = Path(repo_path, "rozwiazania")
     solutions_dir.mkdir(exist_ok=True)
 
@@ -113,7 +113,7 @@ def sync_repo(wr: WebsiteRunner, tasks: list[Task], repo_path: Path) -> None:
             print(
                 f"📸 Dodawanie zgloszenia  do zadania {task.shortname.upper()} o wyniku {task.score}",
             )
-            subm_file_path = save_solution(task, repo_path, wr)
+            subm_file_path = save_solution(task, repo_path, website)
             cleanup_directory(task_dir, keep_file=subm_file_path.name)
             sleep(UPDATE_COLLDOWN)
         else:

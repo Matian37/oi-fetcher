@@ -1,19 +1,21 @@
 import getpass
 from pathlib import Path
 
+from oi_fetcher.exceptions import LoginFailedError
 from oi_fetcher.sync import sync_repo
 from oi_fetcher.tasks import scrape_tasks
-from oi_fetcher.web import WebsiteRunner
+from oi_fetcher.web import Website
 
 
-def run_login_prompt(wr: WebsiteRunner) -> None:
+def run_login_prompt(website: Website) -> None:
     while True:
         login = input("Podaj nazwe uzytkownika na szkopule:\n")
         password = getpass.getpass("Podaj haslo (wpisywanie niewidoczne):\n")
 
-        if wr.login(login, password):
+        try:
+            website.login(login, password)
             break
-        else:
+        except LoginFailedError:
             print("⛔ Logowanie nie powiodlo sie...")
 
 
@@ -34,11 +36,11 @@ def run_repo_path_prompt() -> Path:
 def main():
     print("🚀 Uruchamianie fetchera...")
 
-    with WebsiteRunner() as wr:
-        run_login_prompt(wr)
-        tasks = scrape_tasks(wr)
-        repo_path = run_repo_path_prompt()
-        sync_repo(wr, tasks, repo_path)
+    website = Website()
+    run_login_prompt(website)
+    tasks = scrape_tasks(website)
+    repo_path = run_repo_path_prompt()
+    sync_repo(website, tasks, repo_path)
 
     print("✅ Wszystko jest juz aktualne.")
 

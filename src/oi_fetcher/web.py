@@ -1,101 +1,127 @@
-import os
-import subprocess
-import sys
-from typing import Final, Self
+import re
+from dataclasses import dataclass, field
+from html import unescape
+from typing import Final
 
-from playwright.sync_api import (
-    Browser,
-    Error,
-    Page,
-    Playwright,
-    sync_playwright,
-)
+import requests
 
 from oi_fetcher.exceptions import (
     AlreadyLoggedInError,
-    FailedToLaunchBrowserError,
+    LoginFailedError,
+    MissingCsrfMiddlewareTokenError,
+    MissingCsrfTokenError,
+    MissingSourceError,
     NotLoggedInError,
-    WebsiteNotCompatibleError,
+    WebsiteError,
 )
 
-LOGIN_PAGE: Final[str] = "https://szkopul.edu.pl/login/"
-SUBMISSION_PAGE: Final[str] = "https://szkopul.edu.pl/s/{}/source/"
-TASKS_PAGE: Final[str] = "https://szkopul.edu.pl/task_archive/oi/"
-BROWSER: Final[str] = "chromium"
+BASE_URL: Final[str] = "https://szkopul.edu.pl"
+HOME_PAGE: Final[str] = f"{BASE_URL}/"
+LOGIN_PAGE: Final[str] = f"{BASE_URL}/login/"
+TASKS_PAGE: Final[str] = f"{BASE_URL}/task_archive/oi/"
+SUBMISSION_PAGE: Final[str] = f"{BASE_URL}/s/{{}}/source/"
+
+CSRF_PATTERN: Final[re.Pattern[str]] = re.compile(
+    r'<input\s++type="hidden"\s++name="csrfmiddlewaretoken"\s++value="(?P<csrfmiddlewaretoken>[^"]*)"'
+)
+SOURCE_PATTERN: Final[re.Pattern[str]] = re.compile(
+    r'<pre\s++(?:hidden(?:="")?\s++)?id="raw_source">(?P<source>.*?)</pre>',
+    flags=re.DOTALL,
+)
 
 
-def __install_browser() -> None:
-    subprocess.run(
-        [sys.executable, "-m", "playwright", "install", "chromium"],
-        check=True,
-    )
+@dataclass
+class Website:
+    """
+    Client for the Szkopuł website based on plain HTTP requests.
 
+    Can raise WebsiteError.
+    """
 
-def __launch_browser(playwright: Playwright) -> Browser:
-    if not os.path.exists(playwright.chromium.executable_path):
-        __install_browser()
-    return playwright.chromium.launch(headless=True)
-
-
-class WebsiteRunner:
-    __playwright: Playwright
-    __browser: Browser
-    __page: Page
-
+    csrf_token: str | None = field(default=None, repr=False)
+    session_id: str | None = field(default=None, repr=False)
     logged_in: bool = False
 
-    def __enter__(self) -> Self:
-        self.__playwright = sync_playwright().start()
+    @property
+    def cookies(self) -> dict[str, str]:
+        cookies: dict[str, str] = {}
 
+        if self.session_id is not None:
+            cookies["sessionid"] = self.session_id
+        if self.csrf_token is not None:
+            cookies["csrftoken"] = self.csrf_token
+
+        return cookies
+
+    def read_page(self, url: str) -> str:
         try:
-            self.__browser = __launch_browser(self.__playwright)
-        except Exception as e:
-            self.__playwright.stop()
-            raise FailedToLaunchBrowserError() from e
+            response = requests.get(url, cookies=self.cookies)
+            response.raise_for_status()
+        except requests.RequestException as e:
+            raise WebsiteError() from e
 
-        self.__page = self.__browser.new_page()
+        csrf_token = response.cookies.get("csrftoken")
+        if csrf_token is None:
+            raise MissingCsrfTokenError()
+        self.csrf_token = csrf_token
 
-        return self
+        return response.text
 
-    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
-        self.__page.close()
-        self.__browser.close()
-        self.__playwright.stop()
-
-    def login(self, login: str, password: str) -> bool:
+    def login(self, login: str, password: str) -> None:
         if self.logged_in:
             raise AlreadyLoggedInError()
 
+        home = self.read_page(HOME_PAGE)
+
+        match = CSRF_PATTERN.search(home)
+        if match is None:
+            raise MissingCsrfMiddlewareTokenError()
+
+        csrf_middleware_token = match.group("csrfmiddlewaretoken")
+        if not csrf_middleware_token:
+            raise MissingCsrfMiddlewareTokenError()
+
         try:
-            if self.__page.url != LOGIN_PAGE:
-                self.__page.goto(LOGIN_PAGE)
+            response = requests.post(
+                LOGIN_PAGE,
+                data={
+                    "csrfmiddlewaretoken": csrf_middleware_token,
+                    "login_view-current_step": "auth",
+                    "auth-username": login,
+                    "auth-password": password,
+                },
+                cookies=self.cookies,
+                headers={"Referer": HOME_PAGE},
+            )
+            response.raise_for_status()
+        except requests.RequestException as e:
+            raise WebsiteError() from e
 
-            self.__page.locator("input[id='id_auth-username']").fill(login)
+        session_id = response.cookies.get("sessionid")
+        if session_id is None:
+            raise LoginFailedError()
 
-            passwd_box = self.__page.locator("input[id='id_auth-password']")
-            passwd_box.fill(password)
+        new_csrf_token = response.cookies.get("csrftoken")
+        if new_csrf_token is None:
+            raise MissingCsrfTokenError()
 
-            passwd_box.press("Enter")
-        except Error as e:
-            raise WebsiteNotCompatibleError from e
+        self.session_id = session_id
+        self.csrf_token = new_csrf_token
+        self.logged_in = True
 
-        return self.__page.url != LOGIN_PAGE
+    def read_tasks_page(self) -> str:
+        if not self.logged_in:
+            raise NotLoggedInError()
+        return self.read_page(TASKS_PAGE)
 
-    def read_submission(self, submission_id: int) -> str:
+    def read_submission_code(self, submission_id: int) -> str:
         if not self.logged_in:
             raise NotLoggedInError()
 
-        try:
-            self.__page.goto(SUBMISSION_PAGE.format(submission_id))
+        page = self.read_page(SUBMISSION_PAGE.format(submission_id))
 
-            self.__page.locator("button[id='cpy_btn']").click()
-            code = self.__page.evaluate("() => navigator.clipboard.readText()")
-            assert isinstance(code, str)
-        except Error as e:
-            raise WebsiteNotCompatibleError from e
+        match = SOURCE_PATTERN.search(page)
+        if match is None:
+            raise MissingSourceError()
 
-        return code
-
-    def read_tasks_page(self) -> str:
-        self.__page.goto(TASKS_PAGE)
-        return self.__page.content()
+        return unescape(match.group("source"))

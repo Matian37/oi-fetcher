@@ -245,19 +245,19 @@ class TestSaveSolution:
         self, tmp_path: Path, mocker: MockerFixture
     ) -> None:
         wr = mocker.Mock()
-        wr.read_submission.return_value = "code"
+        wr.read_submission_code.return_value = "code"
         task = make_task(shortname="sho", score=42, submission_id=7)
 
         path = save_solution(task, tmp_path, wr)
 
         assert path == gen_subm_file_path(tmp_path, task)
         assert path.read_text() == "code"
-        wr.read_submission.assert_called_once_with(7)
+        wr.read_submission_code.assert_called_once_with(7)
 
     @pytest.mark.unit
     def test_parent_folders_exist(self, tmp_path: Path, mocker: MockerFixture) -> None:
         wr = mocker.Mock()
-        wr.read_submission.return_value = "code"
+        wr.read_submission_code.return_value = "code"
         task = make_task(shortname="sho", score=42, submission_id=3)
         gen_subm_directory(tmp_path, task).mkdir(parents=True)
 
@@ -265,30 +265,30 @@ class TestSaveSolution:
 
         assert path == gen_subm_file_path(tmp_path, task)
         assert path.read_text() == "code"
-        wr.read_submission.assert_called_once_with(3)
+        wr.read_submission_code.assert_called_once_with(3)
 
     @pytest.mark.unit
     def test_overwrites_existing_file(
         self, tmp_path: Path, mocker: MockerFixture
     ) -> None:
         wr = mocker.Mock()
-        wr.read_submission.return_value = "old code"
+        wr.read_submission_code.return_value = "old code"
         task = make_task(shortname="sho", score=42)
 
         path = save_solution(task, tmp_path, wr)
         assert path.read_text() == "old code"
 
-        wr.read_submission.return_value = "new code"
+        wr.read_submission_code.return_value = "new code"
         result = save_solution(task, tmp_path, wr)
 
         assert result == path
         assert path.read_text() == "new code"
-        assert wr.read_submission.call_count == 2
+        assert wr.read_submission_code.call_count == 2
 
 
 @dataclass
 class SyncRun:
-    read_submission: MockType
+    read_submission_code: MockType
     sleep: MockType
     printed: list[str]
 
@@ -302,9 +302,9 @@ def _run_sync(
     wr = mocker.Mock()
     if isinstance(code, list):
         codes = {task.submission_id: c for task, c in zip(tasks, code, strict=True)}
-        wr.read_submission.side_effect = lambda submission_id: codes[submission_id]
+        wr.read_submission_code.side_effect = lambda submission_id: codes[submission_id]
     else:
-        wr.read_submission.return_value = code
+        wr.read_submission_code.return_value = code
 
     sleep = mocker.patch("oi_fetcher.sync.sleep")
     printed: list[str] = []
@@ -313,7 +313,7 @@ def _run_sync(
     sync_repo(wr, tasks, repo_path)
 
     return SyncRun(
-        read_submission=wr.read_submission,
+        read_submission_code=wr.read_submission_code,
         sleep=sleep,
         printed=printed,
     )
@@ -325,7 +325,7 @@ class TestSyncRepo:
         run = _run_sync(mocker, tmp_path, [])
 
         assert (tmp_path / "rozwiazania").is_dir()
-        run.read_submission.assert_not_called()
+        run.read_submission_code.assert_not_called()
         run.sleep.assert_not_called()
         assert run.printed == []
 
@@ -340,7 +340,7 @@ class TestSyncRepo:
         run = _run_sync(mocker, tmp_path, [task])
 
         assert (gen_subm_directory(tmp_path, task) / "sho.cpp").read_text() == "code"
-        run.read_submission.assert_called_once_with(3)
+        run.read_submission_code.assert_called_once_with(3)
         run.sleep.assert_called_once()
         assert run.printed  # check that the notice was printed
 
@@ -362,7 +362,7 @@ class TestSyncRepo:
         assert not (task_dir / "sho50.cpp").exists()
         assert not (task_dir / "dummy.txt").exists()
         assert not (task_dir / "dummy_dir").exists()
-        run.read_submission.assert_called_once()
+        run.read_submission_code.assert_called_once()
         run.sleep.assert_called_once()
         assert run.printed  # check that the notice was printed
 
@@ -391,7 +391,7 @@ class TestSyncRepo:
 
         assert (task_dir / local_name).read_text() == "local"
         assert not (task_dir / "dummy.txt").exists()
-        run.read_submission.assert_not_called()
+        run.read_submission_code.assert_not_called()
         run.sleep.assert_not_called()
         assert run.printed == []
 
@@ -411,6 +411,6 @@ class TestSyncRepo:
         assert (
             gen_subm_directory(tmp_path, second) / "bbb50.cpp"
         ).read_text() == "second code"
-        assert run.read_submission.call_count == 2
+        assert run.read_submission_code.call_count == 2
         assert run.sleep.call_count == 2
         assert len(run.printed) == 2

@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Final
 
 from oi_fetcher.parse import Location, parse_location
-from oi_fetcher.web import WebsiteRunner
+from oi_fetcher.web import Website
 
 LOCATION_PATTERN: Final[str] = (
     r'^\s*+<div\s++class="[^"]++"\s++id="problems-problemgroups-(?P<location1>[^"]++)">[^\S\n]*+$'
@@ -31,8 +31,8 @@ class Task:
     location: Location
 
 
-def scrape_tasks(wr: WebsiteRunner) -> list[Task]:
-    html = wr.read_tasks_page()
+def scrape_tasks(website: Website) -> list[Task]:
+    html = website.read_tasks_page()
 
     tasks: list[Task] = []
 

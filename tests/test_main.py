@@ -4,36 +4,36 @@ import pytest
 from pytest_mock import MockerFixture
 
 from oi_fetcher import main
+from oi_fetcher.exceptions import LoginFailedError
 
 
 @pytest.mark.unit
 def test_run_login_prompt_success(mocker: MockerFixture) -> None:
-    wr = mocker.Mock()
-    wr.login.return_value = True
+    website = mocker.Mock()
     mocker.patch("builtins.input", lambda _: "user")
     mocker.patch.object(main.getpass, "getpass", lambda _: "pass")
     printed = []
     mocker.patch("builtins.print", printed.append)
 
-    main.run_login_prompt(wr)
+    main.run_login_prompt(website)
 
-    wr.login.assert_called_once_with("user", "pass")
+    website.login.assert_called_once_with("user", "pass")
     assert printed == []
 
 
 @pytest.mark.unit
 def test_run_login_prompt_failure(mocker: MockerFixture) -> None:
-    wr = mocker.Mock()
-    wr.login.side_effect = [False, True]
+    website = mocker.Mock()
+    website.login.side_effect = [LoginFailedError(), None]
     mocker.patch("builtins.input", lambda _: "user")
     mocker.patch.object(main.getpass, "getpass", lambda _: "pass")
     printed = []
     mocker.patch("builtins.print", printed.append)
 
-    main.run_login_prompt(wr)
+    main.run_login_prompt(website)
 
     assert printed
-    assert wr.login.call_count == 2
+    assert website.login.call_count == 2
 
 
 def _run_repo_path_prompt(
