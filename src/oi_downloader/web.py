@@ -59,7 +59,7 @@ class Website:
             response = requests.get(url, cookies=self._cookies)
             response.raise_for_status()
         except requests.RequestException as e:
-            raise WebsiteError() from e
+            raise WebsiteError(message=f"Failed to read page: {e}") from e
 
         csrf_token = response.cookies.get("csrftoken")
         if csrf_token:
@@ -100,7 +100,7 @@ class Website:
             )
             response.raise_for_status()
         except requests.RequestException as e:
-            raise WebsiteError() from e
+            raise WebsiteError(message=f"failed to login: {e}") from e
 
         # Szkopuł returns 200 on failed login and 302 on successful login
         if response.status_code != 302:
@@ -131,7 +131,7 @@ class Website:
             )
             response.raise_for_status()
         except requests.RequestException as e:
-            raise WebsiteError() from e
+            raise WebsiteError(message=f"Failed to logout: {e}") from e
 
         self.session_id = None
         self.csrf_token = None
