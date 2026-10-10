@@ -47,8 +47,8 @@ def run():
 
     try:
         website.logout()
-    except WebsiteError:
-        print("🚨 Error occurred during logout, but continuing")
+    except WebsiteError as e:
+        print(f"🚨 Error occurred during logout, continuing, log: {e}")
 
     print("✅ Everything is up to date.")
 
