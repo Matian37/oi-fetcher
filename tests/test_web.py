@@ -1,6 +1,7 @@
 import pytest
 import requests
 from pytest_mock import MockerFixture
+from requests.cookies import cookiejar_from_dict
 
 from oi_downloader.exceptions import (
     AlreadyLoggedInError,
@@ -11,7 +12,14 @@ from oi_downloader.exceptions import (
     NotLoggedInError,
     WebsiteError,
 )
-from oi_downloader.web import Website
+from oi_downloader.web import (
+    HOME_PAGE,
+    LOGIN_PAGE,
+    LOGOUT_PAGE,
+    SUBMISSION_PAGE,
+    TASKS_PAGE,
+    Website,
+)
 
 CSRF_FORM = '<input type="hidden" name="csrfmiddlewaretoken" value="mid">'
 
@@ -295,3 +303,101 @@ class TestReadSubmissionCode:
 
         with pytest.raises(MissingSourceError):
             website.read_submission_code(42)
+
+
+class TestWebsiteWorkflow:
+    @staticmethod
+    def make_response(
+        text: str = "",
+        status_code: int = 200,
+        cookies: dict[str, str] | None = None,
+    ) -> requests.Response:
+        response = requests.Response()
+        response.status_code = status_code
+        response._content = text.encode("utf-8")
+        response.cookies = cookiejar_from_dict(cookies or {})
+        return response
+
+    def test_usual_workflow(self, mocker: MockerFixture) -> None:
+        TASKS_HTML = (
+            '<div class="card" id="problems-problemgroups-10-e2-d0">\n'
+            '<a href="foo">Foo (foo)</a>\n'
+            '<a class="score" href="/s/101/">50</a>\n'
+        )
+        SUBMISSION_HTML = '<pre id="raw_source">int main() { return 0; }</pre>'
+        SUBM_ID = 101
+        CODE = "int main() { return 0; }"
+
+        get_calls: list[tuple[str, dict[str, str] | None]] = []
+        post_calls: list[dict] = []
+
+        def fake_get(
+            url: str, cookies: dict[str, str] | None = None, **kwargs
+        ) -> requests.Response:
+            get_calls.append((url, cookies))
+            return {
+                HOME_PAGE: self.make_response(
+                    CSRF_FORM, cookies={"csrftoken": "csrf-home"}
+                ),
+                TASKS_PAGE: self.make_response(TASKS_HTML),
+                SUBMISSION_PAGE.format(101): self.make_response(SUBMISSION_HTML),
+            }[url]
+
+        def fake_post(url: str, **kwargs) -> requests.Response:
+            post_calls.append({"url": url, **kwargs})
+            return {
+                LOGIN_PAGE: self.make_response(
+                    status_code=302,
+                    cookies={"sessionid": "sid", "csrftoken": "csrf-auth"},
+                ),
+                LOGOUT_PAGE: self.make_response(),
+            }[url]
+
+        mocker.patch("oi_downloader.web.requests.get", side_effect=fake_get)
+        mocker.patch("oi_downloader.web.requests.post", side_effect=fake_post)
+
+        website = Website()
+
+        website.login("user", "pass")
+        assert website.logged_in
+        assert website.session_id == "sid"
+        assert website.csrf_token == "csrf-auth"
+
+        assert website.read_tasks_page() == TASKS_HTML
+        assert website.read_submission_code(SUBM_ID) == CODE
+
+        website.logout()
+        assert not website.logged_in
+        assert website.session_id is None
+        assert website.csrf_token is None
+
+        assert get_calls == [
+            (HOME_PAGE, {}),
+            (TASKS_PAGE, {"sessionid": "sid", "csrftoken": "csrf-auth"}),
+            (
+                SUBMISSION_PAGE.format(SUBM_ID),
+                {"sessionid": "sid", "csrftoken": "csrf-auth"},
+            ),
+            (HOME_PAGE, {"sessionid": "sid", "csrftoken": "csrf-auth"}),
+        ]
+
+        assert post_calls == [
+            {
+                "url": LOGIN_PAGE,
+                "data": {
+                    "csrfmiddlewaretoken": "mid",
+                    "login_view-current_step": "auth",
+                    "auth-username": "user",
+                    "auth-password": "pass",
+                },
+                "cookies": {"csrftoken": "csrf-home"},
+                "headers": {"Referer": HOME_PAGE},
+                "allow_redirects": False,
+            },
+            {
+                "url": LOGOUT_PAGE,
+                "data": {"csrfmiddlewaretoken": "mid"},
+                "cookies": {"sessionid": "sid", "csrftoken": "csrf-home"},
+                "headers": {"Referer": HOME_PAGE},
+            },
+        ]
