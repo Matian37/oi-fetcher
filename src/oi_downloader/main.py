@@ -39,7 +39,6 @@ def run():
 
     website = Website()
     run_login_prompt(website)
-
     tasks = scrape_tasks(website)
 
     repo_path = run_repo_path_prompt()
@@ -58,6 +57,7 @@ def main():
         run()
     except KeyboardInterrupt:
         sys.exit(1)
+    # parsers raise AssertionError on unexpected website structure
     except AssertionError as e:
         print(f"🚨 Error occurred, contact developer with full error log: {e}")
         sys.exit(1)

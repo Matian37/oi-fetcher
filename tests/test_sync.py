@@ -26,7 +26,7 @@ def make_task(
     score: int = 100,
     submission_id: int = 1,
     edition: str = "xxviii",
-    stage: str = "etap1",
+    stage: str = "etap2",
     day: str | None = "probne",
 ) -> Task:
     return Task(
@@ -98,11 +98,11 @@ class TestGenSubmDirectory:
         task = make_task(
             shortname="sho",
             edition="xxviii",
-            stage="etap1",
+            stage="etap2",
             day="probne",
         )
         assert _gen_subm_directory(tmp_path, task) == (
-            tmp_path / SOLUTIONS_FOLDER / "xxviii" / "etap1" / "probne" / "sho"
+            tmp_path / SOLUTIONS_FOLDER / "xxviii" / "etap2" / "probne" / "sho"
         )
 
     def test_omits_missing_day(self, tmp_path: Path) -> None:

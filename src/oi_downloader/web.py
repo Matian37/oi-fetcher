@@ -26,6 +26,7 @@ CSRF_PATTERN: Final[re.Pattern[str]] = re.compile(
     r'<input\s++type="hidden"\s++name="csrfmiddlewaretoken"\s++value="(?P<csrfmiddlewaretoken>[^"]*)"'
 )
 SOURCE_PATTERN: Final[re.Pattern[str]] = re.compile(
+    # the source block may carry a bare or empty-valued ``hidden`` attribute
     r'<pre\s++(?:hidden(?:="")?\s++)?id="raw_source">(?P<source>.*?)</pre>',
     flags=re.DOTALL,
 )
@@ -62,6 +63,7 @@ class Website:
             raise WebsiteError(message=f"Failed to read page: {e}") from e
 
         csrf_token = response.cookies.get("csrftoken")
+        # the server can rotate the CSRF token, so keep the freshest one
         if csrf_token:
             self.csrf_token = csrf_token
 

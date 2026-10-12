@@ -11,6 +11,9 @@ from oi_downloader.parse import (
 )
 from oi_downloader.web import Website
 
+# Each pattern matches one line of the task archive page and captures one field in
+# its named group. They are combined below into a single pass, so fields are visited
+# in page order: location, shortname, score. Location has two id formats (location1/2).
 LOCATION_PATTERN: Final[str] = (
     r'^\s*+<div\s++class="[^"]++"\s++id="problems-problemgroups-(?P<location1>[^"]++)">[^\S\n]*+$'
     r"|"

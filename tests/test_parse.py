@@ -113,10 +113,10 @@ class TestParseLocation:
         [
             [],
             ["28"],
-            ["28", "e1", "d0", "additional"],
+            ["28", "e2", "d0", "additional"],  # additional part in location
             ["invalid", "e1"],
             ["28", "invalid"],
-            ["28", "e1", "invalid"],
+            ["28", "e2", "invalid"],  # invalid day
         ],
     )
     def test_parse_location_invalid(self, location: list[str]) -> None:

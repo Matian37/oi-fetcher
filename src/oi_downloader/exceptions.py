@@ -1,4 +1,6 @@
 class WebsiteError(Exception):
+    """Base for website errors. Subclasses set a default ``msg``; callers may pass their own."""
+
     msg: str = "an unexpected website error occurred"
 
     def __init__(self, message: str | None = None) -> None:

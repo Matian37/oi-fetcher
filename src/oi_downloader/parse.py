@@ -1,16 +1,20 @@
+"""
+Parsers for Polish Olympiad in Informatics checklist data.
+
+All ``parse_*`` helpers raise ``AssertionError`` on invalid input.
+"""
+
 from dataclasses import dataclass
 from typing import Final
 
 import roman
 
 CHECKLIST_MAX_EDITION: Final[int] = 32
-
 CHECKLIST_STAGES: Final[dict[str, str]] = {
     "e1": "etap1",
     "e2": "etap2",
     "e3": "etap3",
 }
-
 CHECKLIST_DAYS: Final[dict[str, str]] = {
     "d0": "probne",
     "d1": "dzien1",
@@ -21,9 +25,7 @@ CHECKLIST_DAYS: Final[dict[str, str]] = {
 
 @dataclass
 class Location:
-    """
-    Represents a location in the OI checklist with already parsed values.
-    """
+    """A task's checklist location, with values already parsed from their raw form."""
 
     edition: str
     stage: str
@@ -56,6 +58,7 @@ def parse_shortname(value: str) -> str:
 
 def parse_location(location: list[str]) -> Location:
     assert len(location) >= 2
+    # 2 parts for stage 1 (it has no day), 3 otherwise
     assert len(location) == (2 if location[1] == "e1" else 3)
 
     return Location(

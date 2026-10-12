@@ -33,6 +33,7 @@ def test_run_login_prompt_success(mocker: MockerFixture) -> None:
 
 def test_run_login_prompt_failure(mocker: MockerFixture) -> None:
     website = mocker.Mock()
+    # first attempt fails, the retry succeeds
     website.login.side_effect = [LoginFailedError(), None]
     mocker.patch("builtins.input", lambda _: "user")
     mocker.patch.object(main.getpass, "getpass", lambda _: "pass")
@@ -95,6 +96,7 @@ def test_run_repo_path_prompt_file(mocker: MockerFixture, tmp_path: Path) -> Non
 class TestRun:
     CSRF_FORM = '<input type="hidden" name="csrfmiddlewaretoken" value="mid">'
 
+    # editions 10 and 30 become "x" and "xxx" in the checklist
     TASKS_HTML = (
         '<div class="card" id="problems-problemgroups-10-e2-d0">\n'
         '<a href="foo">Foo (foo)</a>\n'
@@ -224,6 +226,7 @@ class TestRun:
                 repo_path=tmp_path,
                 get_responses=[
                     make_response(self.CSRF_FORM, cookies={"csrftoken": "csrf-home"}),
+                    # the tasks page request fails
                     requests.RequestException(),
                 ],
                 post_responses=[
