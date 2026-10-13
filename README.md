@@ -29,7 +29,7 @@ To rebuild checklist, remove the old checklist folder, then run updated tool aga
 
 ## Development
 
-To run the tool from source you need [uv](https://docs.astral.sh/uv/) (Python 3.13+):
+To run the tool from source you need [uv](https://docs.astral.sh/uv/):
 
 ```bash
 git clone https://github.com/Matian37/oi-downloader
