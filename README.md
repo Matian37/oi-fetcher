@@ -1,5 +1,8 @@
 # OI-Downloader
 
+[![CI](https://github.com/Matian37/oi-downloader/actions/workflows/ci.yml/badge.svg)](https://github.com/Matian37/oi-downloader/actions/workflows/ci.yml)
+[![Version](https://img.shields.io/github/v/release/Matian37/oi-downloader?sort=semver&color=blue)](https://github.com/Matian37/oi-downloader/releases/latest)
+
 Tool for downloading your solutions from [Szkopuł](https://szkopul.edu.pl/) for the [Polish Olympic in Informatics checklist](https://github.com/Matian37/oi-checklist).
 
 It is required to provide **login** and **password** for tool to authenticate with the website.
