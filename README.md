@@ -4,6 +4,10 @@ Tool for downloading your solutions from [Szkopuł](https://szkopul.edu.pl/) for
 
 It is required to provide **login** and **password** for tool to authenticate with the website.
 
+## Installation
+
+Download the latest binary from [Releases](https://github.com/Matian37/oi-downloader/releases) for your OS and architecture.
+
 ## How It Works
 
 Application scrapes solutions from the [Szkopuł](https://szkopul.edu.pl/) website. 
@@ -22,3 +26,15 @@ Solution is only downloaded when it has better score than the one already presen
 If you used the tool before version `0.2.0`, you should rebuild your checklist. Keep in mind that your older solutions will be removed, only the latest one will be kept. 
 
 To rebuild checklist, remove the old checklist folder, then run updated tool again.
+
+## Development
+
+To run the tool from source you need [uv](https://docs.astral.sh/uv/) (Python 3.13+):
+
+```bash
+git clone https://github.com/Matian37/oi-downloader
+cd oi-downloader
+uv run oi-downloader
+```
+
+To run the tests, use `uv run pytest`.
