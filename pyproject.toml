@@ -1,6 +1,6 @@
 [project]
 name = "oi-downloader"
-version = "0.0.0"
+version = "0.2.0"
 description = "Tool for downloading your own solutions from the Szkopuł platform for the OI checklist."
 readme = "README.md"
 authors = [
